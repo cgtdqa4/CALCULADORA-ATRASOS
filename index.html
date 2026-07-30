@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Subida Salarial</title>
+    <title>Calculadora de Atrasos y Subida Salarial - CGT</title>
     <style>
         :root {
             --primary-color: #c8102e; /* Rojo CGT */
             --dark-color: #1a1a1a;
-            --light-bg: rgba(255, 255, 255, 0.92);
+            --light-bg: rgba(255, 255, 255, 0.94);
         }
 
         * {
@@ -85,6 +85,15 @@
             border-color: var(--primary-color);
         }
 
+        .input-group.deduction label {
+            color: #c8102e;
+        }
+
+        .input-group.deduction input {
+            border-color: #f5c6cb;
+            background-color: #fff5f5;
+        }
+
         .table-wrapper {
             overflow-x: auto;
             margin-bottom: 25px;
@@ -119,6 +128,11 @@
 
         .diff-positive {
             color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .diff-negative {
+            color: #c8102e;
             font-weight: bold;
         }
 
@@ -166,37 +180,41 @@
 <body>
 
 <div class="container">
-    <h1>Simulador de Actualización Salarial</h1>
-    <p class="subtitle">Introduce tus horas y días trabajados en el mes para calcular la diferencia</p>
+    <h1>Calculadora de Atrasos y Subida Salarial</h1>
+    <p class="subtitle">Introduce el total acumulado de tus conceptos e indica el total cobrado por Mejora Voluntaria</p>
 
     <form id="salaryForm" class="grid-form">
         <div class="input-group">
-            <label for="horasOrdinarias">Horas Ordinarias</label>
+            <label for="horasOrdinarias">Total Horas Ordinarias</label>
             <input type="number" id="horasOrdinarias" min="0" step="0.5" value="0">
         </div>
         <div class="input-group">
-            <label for="horasNocturnas">Horas Nocturnas</label>
+            <label for="horasNocturnas">Total Horas Nocturnas</label>
             <input type="number" id="horasNocturnas" min="0" step="0.5" value="0">
         </div>
         <div class="input-group">
-            <label for="horasComplDiurnas">Horas Compl. Diurnas</label>
+            <label for="horasComplDiurnas">Total Horas Compl. Diurnas</label>
             <input type="number" id="horasComplDiurnas" min="0" step="0.5" value="0">
         </div>
         <div class="input-group">
-            <label for="horasComplNocturnas">Horas Compl. Nocturnas</label>
+            <label for="horasComplNocturnas">Total Horas Compl. Nocturnas</label>
             <input type="number" id="horasComplNocturnas" min="0" step="0.5" value="0">
         </div>
         <div class="input-group">
-            <label for="domingostRotativos">Domingos Rotativos (Días)</label>
+            <label for="domingostRotativos">Total Domingos Rotativos</label>
             <input type="number" id="domingostRotativos" min="0" value="0">
         </div>
         <div class="input-group">
-            <label for="plusFestivoComple">Plus Festivo/Dom. Comple</label>
+            <label for="plusFestivoComple">Total Plus Festivo/Dom. Comple</label>
             <input type="number" id="plusFestivoComple" min="0" value="0">
         </div>
         <div class="input-group">
-            <label for="diasTransporte">Días Plus Transporte</label>
+            <label for="diasTransporte">Total Días Plus Transporte</label>
             <input type="number" id="diasTransporte" min="0" value="0">
+        </div>
+        <div class="input-group deduction">
+            <label for="mejoraVoluntaria">Mejora Voluntaria Percibida (€ a descontar)</label>
+            <input type="number" id="mejoraVoluntaria" min="0" step="0.01" value="0" placeholder="Ej: 150.00">
         </div>
     </form>
 
@@ -212,45 +230,43 @@
                 </tr>
             </thead>
             <tbody id="resultsTable">
-                <!-- Se genera dinámicamente mediante JavaScript -->
+                <!-- Se genera dinámicamente -->
             </tbody>
         </table>
     </div>
 
     <div class="total-box">
         <div>
-            <span>Total Anterior Estimado</span>
-            <strong id="totalAnterior">0,00 €</strong>
+            <span>Bruto Atrasos Generados</span>
+            <strong id="totalBruto">0,00 €</strong>
         </div>
         <div>
-            <span>Total Nuevo Estimado</span>
-            <strong id="totalNuevo">0,00 €</strong>
+            <span>Deducción (Mejora Vol.)</span>
+            <strong id="totalDeduccion" style="color: #ff6b6b;">-0,00 €</strong>
         </div>
         <div>
-            <span>Incremento Total Mensual</span>
-            <strong id="totalIncremento" class="increment">+0,00 €</strong>
+            <span>Neto Estimado Atrasos</span>
+            <strong id="totalNeto" class="increment">0,00 €</strong>
         </div>
     </div>
 </div>
 
 <script>
-    // Valores de las tarifas (Anterior y Nueva)
     const TARIFAS = {
-        horasOrdinarias: { nombre: 'Hora Ordinaria', ant: 10.92, nua: 11.36, tipo: 'hora' }, // Nueva estimada de cálculo base
-        horasNocturnas: { nombre: 'Hora Nocturna', ant: 13.15, nua: 11.36 + 2.32, tipo: 'hora' }, // Base + 2,32€
-        horasComplDiurnas: { nombre: 'Hora Compl. Diurna', ant: 10.05, nua: 10.05, tipo: 'hora' },
-        horasComplNocturnas: { nombre: 'Hora Compl. Nocturna', ant: 12.28, nua: 12.28, tipo: 'hora' },
-        domingostRotativos: { nombre: 'Domingo Rotativo', ant: 85.725, nua: 89.15, tipo: 'unidad' },
-        plusFestivoComple: { nombre: 'Plus Festivo / Dom. Comple', ant: 174.13, nua: 181.10, tipo: 'unidad' },
-        diasTransporte: { nombre: 'Plus Transporte (por día)', ant: 6.98, nua: 7.26, tipo: 'dia' }
+        horasOrdinarias: { nombre: 'Hora Ordinaria', ant: 10.92, nua: 11.36 },
+        horasNocturnas: { nombre: 'Hora Nocturna', ant: 13.15, nua: 11.36 + 2.32 },
+        horasComplDiurnas: { nombre: 'Hora Compl. Diurna', ant: 10.05, nua: 10.05 },
+        horasComplNocturnas: { nombre: 'Hora Compl. Nocturna', ant: 12.28, nua: 12.28 },
+        domingostRotativos: { nombre: 'Domingo Rotativo', ant: 85.725, nua: 89.15 },
+        plusFestivoComple: { nombre: 'Plus Festivo / Dom. Comple', ant: 174.13, nua: 181.10 },
+        diasTransporte: { nombre: 'Plus Transporte (por día)', ant: 6.98, nua: 7.26 }
     };
 
     function calcular() {
         const tbody = document.getElementById('resultsTable');
         tbody.innerHTML = '';
 
-        let acumuladoAnterior = 0;
-        let acumuladoNuevo = 0;
+        let brutoAtrasos = 0;
 
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
@@ -260,8 +276,7 @@
             const difUnitaria = data.nua - data.ant;
             const difTotal = subtotalNue - subtotalAnt;
 
-            acumuladoAnterior += subtotalAnt;
-            acumuladoNuevo += subtotalNue;
+            brutoAtrasos += difTotal;
 
             if (inputVal > 0) {
                 const tr = document.createElement('tr');
@@ -270,29 +285,41 @@
                     <td>${data.ant.toFixed(3)} €</td>
                     <td>${data.nua.toFixed(2)} €</td>
                     <td class="diff-positive">+${difUnitaria.toFixed(2)} €</td>
-                    <td><strong>${subtotalNue.toFixed(2)} €</strong></td>
+                    <td><strong>+${difTotal.toFixed(2)} €</strong></td>
                 `;
                 tbody.appendChild(tr);
             }
         }
 
-        if (tbody.innerHTML === '') {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">Introduce unidades para ver el desglose</td></tr>`;
+        const mejoraVoluntaria = parseFloat(document.getElementById('mejoraVoluntaria').value) || 0;
+
+        if (mejoraVoluntaria > 0) {
+            const trMV = document.createElement('tr');
+            trMV.innerHTML = `
+                <td><strong>Mejora Voluntaria (A compensar)</strong></td>
+                <td>-</td>
+                <td>-</td>
+                <td class="diff-negative">Deducción</td>
+                <td class="diff-negative"><strong>-${mejoraVoluntaria.toFixed(2)} €</strong></td>
+            `;
+            tbody.appendChild(trMV);
         }
 
-        const difTotalGeneral = acumuladoNuevo - acumuladoAnterior;
+        if (tbody.innerHTML === '') {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">Introduce tus datos para calcular los atrasos acumulados</td></tr>`;
+        }
 
-        document.getElementById('totalAnterior').textContent = acumuladoAnterior.toFixed(2) + ' €';
-        document.getElementById('totalNuevo').textContent = acumuladoNuevo.toFixed(2) + ' €';
-        document.getElementById('totalIncremento').textContent = '+' + difTotalGeneral.toFixed(2) + ' €';
+        const netoAtrasos = brutoAtrasos - mejoraVoluntaria;
+
+        document.getElementById('totalBruto').textContent = '+' + brutoAtrasos.toFixed(2) + ' €';
+        document.getElementById('totalDeduccion').textContent = '-' + mejoraVoluntaria.toFixed(2) + ' €';
+        document.getElementById('totalNeto').textContent = (netoAtrasos >= 0 ? '+' : '') + netoAtrasos.toFixed(2) + ' €';
     }
 
-    // Escuchar cambios en los inputs
     document.querySelectorAll('#salaryForm input').forEach(input => {
         input.addEventListener('input', calcular);
     });
 
-    // Cálculo inicial
     calcular();
 </script>
 
