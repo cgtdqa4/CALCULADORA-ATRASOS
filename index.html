@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Subida Salarial</title>
+    <style>
+        :root {
+            --primary-color: #c8102e; /* Rojo CGT */
+            --dark-color: #1a1a1a;
+            --light-bg: rgba(255, 255, 255, 0.92);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #111 url('https://upload.wikimedia.org/wikipedia/commons/a/a9/Logo_CGT_Espa%C3%B1a.svg') no-repeat center center fixed;
+            background-size: 35%;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--light-bg);
+            backdrop-filter: blur(5px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 900px;
+            padding: 25px;
+            border-top: 6px solid var(--primary-color);
+        }
+
+        h1 {
+            color: var(--dark-color);
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #555;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .grid-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: var(--dark-color);
+            color: white;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .diff-positive {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .total-box {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .total-box div span {
+            display: block;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .total-box div strong {
+            font-size: 1.4rem;
+            color: #fff;
+        }
+
+        .total-box .increment {
+            color: #4caf50;
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                background-size: 70%;
+            }
+            .container {
+                padding: 15px;
+            }
+            th, td {
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Simulador de Actualización Salarial</h1>
+    <p class="subtitle">Introduce tus horas y días trabajados en el mes para calcular la diferencia</p>
+
+    <form id="salaryForm" class="grid-form">
+        <div class="input-group">
+            <label for="horasOrdinarias">Horas Ordinarias</label>
+            <input type="number" id="horasOrdinarias" min="0" step="0.5" value="0">
+        </div>
+        <div class="input-group">
+            <label for="horasNocturnas">Horas Nocturnas</label>
+            <input type="number" id="horasNocturnas" min="0" step="0.5" value="0">
+        </div>
+        <div class="input-group">
+            <label for="horasComplDiurnas">Horas Compl. Diurnas</label>
+            <input type="number" id="horasComplDiurnas" min="0" step="0.5" value="0">
+        </div>
+        <div class="input-group">
+            <label for="horasComplNocturnas">Horas Compl. Nocturnas</label>
+            <input type="number" id="horasComplNocturnas" min="0" step="0.5" value="0">
+        </div>
+        <div class="input-group">
+            <label for="domingostRotativos">Domingos Rotativos (Días)</label>
+            <input type="number" id="domingostRotativos" min="0" value="0">
+        </div>
+        <div class="input-group">
+            <label for="plusFestivoComple">Plus Festivo/Dom. Comple</label>
+            <input type="number" id="plusFestivoComple" min="0" value="0">
+        </div>
+        <div class="input-group">
+            <label for="diasTransporte">Días Plus Transporte</label>
+            <input type="number" id="diasTransporte" min="0" value="0">
+        </div>
+    </form>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th>Valor Anterior</th>
+                    <th>Valor Nuevo</th>
+                    <th>Diferencia / Ud.</th>
+                    <th>Total Estimado</th>
+                </tr>
+            </thead>
+            <tbody id="resultsTable">
+                <!-- Se genera dinámicamente mediante JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="total-box">
+        <div>
+            <span>Total Anterior Estimado</span>
+            <strong id="totalAnterior">0,00 €</strong>
+        </div>
+        <div>
+            <span>Total Nuevo Estimado</span>
+            <strong id="totalNuevo">0,00 €</strong>
+        </div>
+        <div>
+            <span>Incremento Total Mensual</span>
+            <strong id="totalIncremento" class="increment">+0,00 €</strong>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Valores de las tarifas (Anterior y Nueva)
+    const TARIFAS = {
+        horasOrdinarias: { nombre: 'Hora Ordinaria', ant: 10.92, nua: 11.36, tipo: 'hora' }, // Nueva estimada de cálculo base
+        horasNocturnas: { nombre: 'Hora Nocturna', ant: 13.15, nua: 11.36 + 2.32, tipo: 'hora' }, // Base + 2,32€
+        horasComplDiurnas: { nombre: 'Hora Compl. Diurna', ant: 10.05, nua: 10.05, tipo: 'hora' },
+        horasComplNocturnas: { nombre: 'Hora Compl. Nocturna', ant: 12.28, nua: 12.28, tipo: 'hora' },
+        domingostRotativos: { nombre: 'Domingo Rotativo', ant: 85.725, nua: 89.15, tipo: 'unidad' },
+        plusFestivoComple: { nombre: 'Plus Festivo / Dom. Comple', ant: 174.13, nua: 181.10, tipo: 'unidad' },
+        diasTransporte: { nombre: 'Plus Transporte (por día)', ant: 6.98, nua: 7.26, tipo: 'dia' }
+    };
+
+    function calcular() {
+        const tbody = document.getElementById('resultsTable');
+        tbody.innerHTML = '';
+
+        let acumuladoAnterior = 0;
+        let acumuladoNuevo = 0;
+
+        for (const [key, data] of Object.entries(TARIFAS)) {
+            const inputVal = parseFloat(document.getElementById(key).value) || 0;
+            
+            const subtotalAnt = inputVal * data.ant;
+            const subtotalNue = inputVal * data.nua;
+            const difUnitaria = data.nua - data.ant;
+            const difTotal = subtotalNue - subtotalAnt;
+
+            acumuladoAnterior += subtotalAnt;
+            acumuladoNuevo += subtotalNue;
+
+            if (inputVal > 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${data.nombre}</strong> (${inputVal})</td>
+                    <td>${data.ant.toFixed(3)} €</td>
+                    <td>${data.nua.toFixed(2)} €</td>
+                    <td class="diff-positive">+${difUnitaria.toFixed(2)} €</td>
+                    <td><strong>${subtotalNue.toFixed(2)} €</strong></td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        if (tbody.innerHTML === '') {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">Introduce unidades para ver el desglose</td></tr>`;
+        }
+
+        const difTotalGeneral = acumuladoNuevo - acumuladoAnterior;
+
+        document.getElementById('totalAnterior').textContent = acumuladoAnterior.toFixed(2) + ' €';
+        document.getElementById('totalNuevo').textContent = acumuladoNuevo.toFixed(2) + ' €';
+        document.getElementById('totalIncremento').textContent = '+' + difTotalGeneral.toFixed(2) + ' €';
+    }
+
+    // Escuchar cambios en los inputs
+    document.querySelectorAll('#salaryForm input').forEach(input => {
+        input.addEventListener('input', calcular);
+    });
+
+    // Cálculo inicial
+    calcular();
+</script>
+
+</body>
+</html>
