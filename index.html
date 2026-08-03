@@ -188,7 +188,7 @@
 
 <div class="container">
     <h1>Calculadora de Atrasos y Subida Salarial</h1>
-    <p class="subtitle">Introduce tus horas semanales, los meses de plus de transporte, el resto de conceptos y la Mejora Voluntaria</p>
+    <p class="subtitle">Introduce tus horas semanales, los meses de plus convenio, el resto de conceptos y la Mejora Voluntaria</p>
 
     <form id="salaryForm" class="grid-form">
         <div class="input-group highlight-box">
@@ -196,8 +196,8 @@
             <input type="number" id="horasSemanales" min="1" max="40" step="0.5" value="40">
         </div>
         <div class="input-group highlight-box">
-            <label for="mesesTransporte">Meses de Plus Transporte a calcular</label>
-            <input type="number" id="mesesTransporte" min="0" step="1" value="12">
+            <label for="mesesPlusConvenio">Meses de Plus Convenio (80€ base 40h)</label>
+            <input type="number" id="mesesPlusConvenio" min="0" step="1" value="12">
         </div>
         <div class="input-group">
             <label for="horasOrdinarias">Total Horas Ordinarias</label>
@@ -278,27 +278,27 @@
 
         let brutoAtrasos = 0;
         const horasSemanales = parseFloat(document.getElementById('horasSemanales').value) || 40;
-        const mesesTransporte = parseInt(document.getElementById('mesesTransporte').value) || 0;
+        const mesesConvenio = parseInt(document.getElementById('mesesPlusConvenio').value) || 0;
 
-        // Cálculo del plus de transporte proporcional (Base 80€ mensuales para 40h)
-        const plusMensualAnterior = (80 * horasSemanales) / 40;
-        // Suponiendo que el nuevo convenio aplica una subida proporcional o fija equivalente en base a los incrementos generales (ej. subida estimada sobre la base del 80€, ej. 83.20€)
-        // O aplicando la proporción directa con la subida de tablas:
-        const plusMensualNuevo = (83.20 * horasSemanales) / 40; // Proporción de subida estimada o calculada
-        const difMensualTransporte = plusMensualNuevo - plusMensualAnterior;
-        const totalTransporteAtrasos = difMensualTransporte * mesesTransporte;
+        // Cálculo del Plus Convenio proporcional (Tomando 80€ base mensual nuevos para 40h)
+        // Si antes no se cobraba o sube, calculamos la proporción de esos 80€ mensuales según las horas semanales
+        const plusConvenioNuevoMensual = (80 * horasSemanales) / 40;
+        // Si asumimos que el valor anterior era 0 o menor (puedes ajustar el valor anterior si existía uno previo, por defecto se calcula íntegro o sobre la diferencia)
+        const plusConvenioAntiguoMensual = 0; // Ajustar si el convenio anterior ya tenía una cantidad fija base para este plus
+        const difMensualConvenio = plusConvenioNuevoMensual - plusConvenioAntiguoMensual;
+        const totalConvenioAtrasos = difMensualConvenio * mesesConvenio;
 
-        if (mesesTransporte > 0) {
-            brutoAtrasos += totalTransporteAtrasos;
-            const trTransp = document.createElement('tr');
-            trTransp.innerHTML = `
-                <td><strong>Plus Transporte Proporcional (${horasSemanales}h/sem)</strong></td>
-                <td>${plusMensualAnterior.toFixed(2)} € / mes</td>
-                <td>${plusMensualNuevo.toFixed(2)} € / mes</td>
-                <td class="diff-positive">+${difMensualTransporte.toFixed(2)} €/mes</td>
-                <td><strong>+${totalTransporteAtrasos.toFixed(2)} € (${mesesTransporte} meses)</strong></td>
+        if (mesesConvenio > 0) {
+            brutoAtrasos += totalConvenioAtrasos;
+            const trConvenio = document.createElement('tr');
+            trConvenio.innerHTML = `
+                <td><strong>Plus Convenio Proporcional (${horasSemanales}h/sem)</strong></td>
+                <td>${plusConvenioAntiguoMensual.toFixed(2)} € / mes</td>
+                <td>${plusConvenioNuevoMensual.toFixed(2)} € / mes</td>
+                <td class="diff-positive">+${difMensualConvenio.toFixed(2)} €/mes</td>
+                <td><strong>+${totalConvenioAtrasos.toFixed(2)} € (${mesesConvenio} meses)</strong></td>
             `;
-            tbody.appendChild(trTransp);
+            tbody.appendChild(trConvenio);
         }
 
         // Resto de conceptos por horas o unidades
