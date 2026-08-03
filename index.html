@@ -34,7 +34,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 900px;
+            max-width: 950px;
             padding: 25px;
             border-top: 6px solid var(--primary-color);
         }
@@ -55,7 +55,7 @@
 
         .grid-form {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 15px;
             margin-bottom: 25px;
         }
@@ -188,19 +188,23 @@
 
 <div class="container">
     <h1>Calculadora de Atrasos y Subida Salarial</h1>
-    <p class="subtitle">Introduce tus horas semanales, los meses de plus convenio, el resto de conceptos y la Mejora Voluntaria</p>
+    <p class="subtitle">Introduce tus horas de contrato, horas mensuales trabajadas, meses a calcular y conceptos adicionales</p>
 
     <form id="salaryForm" class="grid-form">
         <div class="input-group highlight-box">
-            <label for="horasSemanales">Horas Semanales (Permite decimales)</label>
+            <label for="horasSemanales">Horas Semanales de Contrato (Dec.)</label>
             <input type="number" id="horasSemanales" min="1" max="40" step="0.5" value="40">
         </div>
         <div class="input-group highlight-box">
-            <label for="mesesPlusConvenio">Meses de Plus Convenio (80€ base 40h)</label>
-            <input type="number" id="mesesPlusConvenio" min="0" step="1" value="12">
+            <label for="mesesAtrasos">Meses de Atrasos a calcular</label>
+            <input type="number" id="mesesAtrasos" min="1" step="1" value="12">
+        </div>
+        <div class="input-group highlight-box">
+            <label for="horasMensualesBase">Total Horas Mensuales (para Salario Base)</label>
+            <input type="number" id="horasMensualesBase" min="0" step="0.5" value="160">
         </div>
         <div class="input-group">
-            <label for="horasOrdinarias">Total Horas Ordinarias</label>
+            <label for="horasOrdinarias">Total Horas Ordinarias (Extra / Realizadas)</label>
             <input type="number" id="horasOrdinarias" min="0" step="0.5" value="0">
         </div>
         <div class="input-group">
@@ -263,6 +267,7 @@
 </div>
 
 <script>
+    // Tarifas unitarias (ejemplo de diferencia entre tablas anteriores y nuevas)
     const TARIFAS = {
         horasOrdinarias: { nombre: 'Hora Ordinaria', ant: 10.92, nua: 11.36 },
         horasNocturnas: { nombre: 'Hora Nocturna', ant: 13.15, nua: 11.36 + 2.32 },
@@ -278,30 +283,52 @@
 
         let brutoAtrasos = 0;
         const horasSemanales = parseFloat(document.getElementById('horasSemanales').value) || 40;
-        const mesesConvenio = parseInt(document.getElementById('mesesPlusConvenio').value) || 0;
+        const mesesAtrasos = parseInt(document.getElementById('mesesAtrasos').value) || 0;
+        const horasMensualesBase = parseFloat(document.getElementById('horasMensualesBase').value) || 0;
 
-        // Cálculo del Plus Convenio proporcional (Tomando 80€ base mensual nuevos para 40h)
-        // Si antes no se cobraba o sube, calculamos la proporción de esos 80€ mensuales según las horas semanales
+        // 1. CÁLCULO DEL SALARIO BASE (con 15 pagas prorrateadas)
+        // Factor de prorrateo de 15 pagas sobre 12 meses: 15 / 12 = 1.25
+        const factorProrrateoPagas = 15 / 12; 
+        
+        // Diferencia estimada de tarifa por hora de Salario Base entre convenio viejo y nuevo (ejemplo: 0.40€ de diferencia por hora base)
+        const diffSalarioBaseHora = 0.40; 
+        const difMensualBase = horasMensualesBase * diffSalarioBaseHora * factorProrrateoPagas;
+        const totalBaseAtrasos = difMensualBase * mesesAtrasos;
+
+        if (mesesAtrasos > 0 && horasMensualesBase > 0) {
+            brutoAtrasos += totalBaseAtrasos;
+            const trBase = document.createElement('tr');
+            trBase.innerHTML = `
+                <td><strong>Salario Base (Incl. 15 pagas prorrateadas)</strong></td>
+                <td>-</td>
+                <td>-</td>
+                <td class="diff-positive">+${(diffSalarioBaseHora * factorProrrateoPagas).toFixed(2)} €/h mes</td>
+                <td><strong>+${totalBaseAtrasos.toFixed(2)} € (${mesesAtrasos} meses)</strong></td>
+            `;
+            tbody.appendChild(trBase);
+        }
+
+        // 2. CÁLCULO DEL PLUS CONVENIO (a 12 meses, proporcional a las horas semanales)
+        // Base de 80€ mensuales para 40 horas completas a 12 meses
         const plusConvenioNuevoMensual = (80 * horasSemanales) / 40;
-        // Si asumimos que el valor anterior era 0 o menor (puedes ajustar el valor anterior si existía uno previo, por defecto se calcula íntegro o sobre la diferencia)
-        const plusConvenioAntiguoMensual = 0; // Ajustar si el convenio anterior ya tenía una cantidad fija base para este plus
+        const plusConvenioAntiguoMensual = 0; // Si antes no lo había o era otra cantidad
         const difMensualConvenio = plusConvenioNuevoMensual - plusConvenioAntiguoMensual;
-        const totalConvenioAtrasos = difMensualConvenio * mesesConvenio;
+        const totalConvenioAtrasos = difMensualConvenio * mesesAtrasos;
 
-        if (mesesConvenio > 0) {
+        if (mesesAtrasos > 0) {
             brutoAtrasos += totalConvenioAtrasos;
             const trConvenio = document.createElement('tr');
             trConvenio.innerHTML = `
-                <td><strong>Plus Convenio Proporcional (${horasSemanales}h/sem)</strong></td>
+                <td><strong>Plus Convenio (${horasSemanales}h/sem, 12 meses)</strong></td>
                 <td>${plusConvenioAntiguoMensual.toFixed(2)} € / mes</td>
                 <td>${plusConvenioNuevoMensual.toFixed(2)} € / mes</td>
                 <td class="diff-positive">+${difMensualConvenio.toFixed(2)} €/mes</td>
-                <td><strong>+${totalConvenioAtrasos.toFixed(2)} € (${mesesConvenio} meses)</strong></td>
+                <td><strong>+${totalConvenioAtrasos.toFixed(2)} € (${mesesAtrasos} meses)</strong></td>
             `;
             tbody.appendChild(trConvenio);
         }
 
-        // Resto de conceptos por horas o unidades
+        // 3. RESTO DE CONCEPTOS POR HORAS / UNIDADES
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
             
@@ -315,7 +342,7 @@
             if (inputVal > 0) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${data.nombre}</strong> (${inputVal})</td>
+                    <td><strong>${data.nombre}</strong> (${inputVal} uds)</td>
                     <td>${data.ant.toFixed(3)} €</td>
                     <td>${data.nua.toFixed(2)} €</td>
                     <td class="diff-positive">+${difUnitaria.toFixed(2)} €</td>
@@ -325,6 +352,7 @@
             }
         }
 
+        // 4. MEJORA VOLUNTARIA (DEDUCCIÓN)
         const mejoraVoluntaria = parseFloat(document.getElementById('mejoraVoluntaria').value) || 0;
 
         if (mejoraVoluntaria > 0) {
