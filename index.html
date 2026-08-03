@@ -188,12 +188,16 @@
 
 <div class="container">
     <h1>Calculadora de Atrasos y Subida Salarial</h1>
-    <p class="subtitle">Introduce el total acumulado de tus conceptos, horas semanales e indica el total cobrado por Mejora Voluntaria</p>
+    <p class="subtitle">Introduce tus horas semanales, los meses de plus de transporte, el resto de conceptos y la Mejora Voluntaria</p>
 
     <form id="salaryForm" class="grid-form">
         <div class="input-group highlight-box">
             <label for="horasSemanales">Horas Semanales (Permite decimales)</label>
             <input type="number" id="horasSemanales" min="1" max="40" step="0.5" value="40">
+        </div>
+        <div class="input-group highlight-box">
+            <label for="mesesTransporte">Meses de Plus Transporte a calcular</label>
+            <input type="number" id="mesesTransporte" min="0" step="1" value="12">
         </div>
         <div class="input-group">
             <label for="horasOrdinarias">Total Horas Ordinarias</label>
@@ -218,10 +222,6 @@
         <div class="input-group">
             <label for="plusFestivoComple">Total Plus Festivo/Dom. Comple</label>
             <input type="number" id="plusFestivoComple" min="0" value="0">
-        </div>
-        <div class="input-group">
-            <label for="diasTransporte">Total Días Plus Transporte</label>
-            <input type="number" id="diasTransporte" min="0" value="0">
         </div>
         <div class="input-group deduction">
             <label for="mejoraVoluntaria">Mejora Voluntaria Percibida (€ a descontar)</label>
@@ -269,8 +269,7 @@
         horasComplDiurnas: { nombre: 'Hora Compl. Diurna', ant: 10.05, nua: 10.05 },
         horasComplNocturnas: { nombre: 'Hora Compl. Nocturna', ant: 12.28, nua: 12.28 },
         domingostRotativos: { nombre: 'Domingo Rotativo', ant: 85.725, nua: 89.15 },
-        plusFestivoComple: { nombre: 'Plus Festivo / Dom. Comple', ant: 174.13, nua: 181.10 },
-        diasTransporte: { nombre: 'Plus Transporte (por día)', ant: 6.98, nua: 7.26 }
+        plusFestivoComple: { nombre: 'Plus Festivo / Dom. Comple', ant: 174.13, nua: 181.10 }
     };
 
     function calcular() {
@@ -279,35 +278,46 @@
 
         let brutoAtrasos = 0;
         const horasSemanales = parseFloat(document.getElementById('horasSemanales').value) || 40;
-        const factorProporcional = horasSemanales / 40;
+        const mesesTransporte = parseInt(document.getElementById('mesesTransporte').value) || 0;
 
+        // Cálculo del plus de transporte proporcional (Base 80€ mensuales para 40h)
+        const plusMensualAnterior = (80 * horasSemanales) / 40;
+        // Suponiendo que el nuevo convenio aplica una subida proporcional o fija equivalente en base a los incrementos generales (ej. subida estimada sobre la base del 80€, ej. 83.20€)
+        // O aplicando la proporción directa con la subida de tablas:
+        const plusMensualNuevo = (83.20 * horasSemanales) / 40; // Proporción de subida estimada o calculada
+        const difMensualTransporte = plusMensualNuevo - plusMensualAnterior;
+        const totalTransporteAtrasos = difMensualTransporte * mesesTransporte;
+
+        if (mesesTransporte > 0) {
+            brutoAtrasos += totalTransporteAtrasos;
+            const trTransp = document.createElement('tr');
+            trTransp.innerHTML = `
+                <td><strong>Plus Transporte Proporcional (${horasSemanales}h/sem)</strong></td>
+                <td>${plusMensualAnterior.toFixed(2)} € / mes</td>
+                <td>${plusMensualNuevo.toFixed(2)} € / mes</td>
+                <td class="diff-positive">+${difMensualTransporte.toFixed(2)} €/mes</td>
+                <td><strong>+${totalTransporteAtrasos.toFixed(2)} € (${mesesTransporte} meses)</strong></td>
+            `;
+            tbody.appendChild(trTransp);
+        }
+
+        // Resto de conceptos por horas o unidades
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
             
-            let subtotalAnt = inputVal * data.ant;
-            let subtotalNue = inputVal * data.nua;
-            let difUnitaria = data.nua - data.ant;
-            let difTotal = subtotalNue - subtotalAnt;
-            let nombreConcepto = data.nombre;
-
-            // Si es el plus de transporte, aplicamos la proporción en función de las horas semanales sobre 80€ base mensual (o calculado por día proporcional)
-            if (key === 'diasTransporte') {
-                // Ajustamos el valor base y nuevo del transporte proporcionalmente a las horas
-                const transporteAntProporcional = data.ant * factorProporcional;
-                const transporteNueProporcional = data.nua * factorProporcional;
-                difUnitaria = transporteNueProporcional - transporteAntProporcional;
-                difTotal = inputVal * difUnitaria;
-                nombreConcepto = `Plus Transporte (${horasSemanales}h/sem)`;
-            }
+            const subtotalAnt = inputVal * data.ant;
+            const subtotalNue = inputVal * data.nua;
+            const difUnitaria = data.nua - data.ant;
+            const difTotal = subtotalNue - subtotalAnt;
 
             brutoAtrasos += difTotal;
 
             if (inputVal > 0) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${nombreConcepto}</strong> (${inputVal})</td>
-                    <td>${(key === 'diasTransporte' ? (data.ant * factorProporcional) : data.ant).toFixed(3)} €</td>
-                    <td>${(key === 'diasTransporte' ? (data.nua * factorProporcional) : data.nua).toFixed(2)} €</td>
+                    <td><strong>${data.nombre}</strong> (${inputVal})</td>
+                    <td>${data.ant.toFixed(3)} €</td>
+                    <td>${data.nua.toFixed(2)} €</td>
                     <td class="diff-positive">+${difUnitaria.toFixed(2)} €</td>
                     <td><strong>+${difTotal.toFixed(2)} €</strong></td>
                 `;
