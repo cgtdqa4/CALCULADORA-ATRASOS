@@ -188,7 +188,7 @@
 
 <div class="container">
     <h1>Calculadora de Atrasos y Subida Salarial</h1>
-    <p class="subtitle">Introduce tus horas de contrato, meses de atrasos, pluses fijos (convenio y nocturnidad), horas y mejora voluntaria</p>
+    <p class="subtitle">Cálculo de diferidos descontando el 2,9% ya abonado (pendiente real: 1,1% sobre subida total)</p>
 
     <form id="salaryForm" class="grid-form">
         <div class="input-group highlight-box">
@@ -295,9 +295,14 @@
         const antiguedadMensual = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
         const nocturnidadFijaMensual = parseFloat(document.getElementById('nocturnidadFijaMensual').value) || 0;
 
-        // 1. CÁLCULO DEL SALARIO BASE (15 pagas prorrateadas, factor 15/12 = 1.25)
+        // Factor de prorrateo de 15 pagas sobre 12 meses: 15 / 12 = 1.25
         const factorProrrateoPagas = 15 / 12; 
-        const diffSalarioBaseHora = 0.40; 
+        
+        // Porcentaje real pendiente de aplicar (4% total menos 2,9% ya pagado por Amazon = 1,1%)
+        const porcentajePendiente = 0.011;
+
+        // 1. CÁLCULO DEL SALARIO BASE (Aplicando el 1,1% pendiente sobre la base horaria y prorrateado a 15 pagas)
+        const diffSalarioBaseHora = 0.40 * (porcentajePendiente / 0.04); // Ajustado proporcionalmente al 1.1%
         const difMensualBase = horasMensualesBase * diffSalarioBaseHora * factorProrrateoPagas;
         const totalBaseAtrasos = difMensualBase * mesesAtrasos;
 
@@ -305,7 +310,7 @@
             brutoAtrasos += totalBaseAtrasos;
             const trBase = document.createElement('tr');
             trBase.innerHTML = `
-                <td><strong>Salario Base (Incl. 15 pagas prorrateadas)</strong></td>
+                <td><strong>Salario Base (Pendiente 1.1%, 15 pagas)</strong></td>
                 <td>-</td>
                 <td>-</td>
                 <td class="diff-positive">+${(diffSalarioBaseHora * factorProrrateoPagas).toFixed(2)} €/h mes</td>
@@ -314,36 +319,34 @@
             tbody.appendChild(trBase);
         }
 
-        // 2. CÁLCULO DE LA ANTIGÜEDAD (Revalorización del 4% estimada, prorrateada a 15 pagas)
+        // 2. CÁLCULO DE LA ANTIGÜEDAD (Aplicando el 1,1% pendiente, prorrateado a 15 pagas)
         if (mesesAtrasos > 0 && antiguedadMensual > 0) {
-            const porcentajeSubidaConvenio = 0.04;
-            const difMensualAntiguedad = (antiguedadMensual * porcentajeSubidaConvenio) * factorProrrateoPagas;
+            const difMensualAntiguedad = (antiguedadMensual * porcentajePendiente) * factorProrrateoPagas;
             const totalAntiguedadAtrasos = difMensualAntiguedad * mesesAtrasos;
             brutoAtrasos += totalAntiguedadAtrasos;
 
             const trAntiguedad = document.createElement('tr');
             trAntiguedad.innerHTML = `
-                <td><strong>Plus Antigüedad (Revalorización retroactiva)</strong></td>
+                <td><strong>Plus Antigüedad (Pendiente 1.1%)</strong></td>
                 <td>${antiguedadMensual.toFixed(2)} €/mes</td>
-                <td>${(antiguedadMensual * (1 + porcentajeSubidaConvenio)).toFixed(2)} €/mes</td>
+                <td>${(antiguedadMensual * (1 + 0.04)).toFixed(2)} €/mes</td>
                 <td class="diff-positive">+${difMensualAntiguedad.toFixed(2)} €/mes</td>
                 <td><strong>+${totalAntiguedadAtrasos.toFixed(2)} € (${mesesAtrasos} meses)</strong></td>
             `;
             tbody.appendChild(trAntiguedad);
         }
 
-        // 3. CÁLCULO DEL PLUS NOCTURNIDAD FIJO MENSUAL (Si aplica, con subida estimada del 4% y 15 pagas)
+        // 3. CÁLCULO DEL PLUS NOCTURNIDAD FIJO MENSUAL (Aplicando el 1,1% pendiente, prorrateado a 15 pagas)
         if (mesesAtrasos > 0 && nocturnidadFijaMensual > 0) {
-            const porcentajeSubidaConvenio = 0.04;
-            const difMensualNocturnidad = (nocturnidadFijaMensual * porcentajeSubidaConvenio) * factorProrrateoPagas;
+            const difMensualNocturnidad = (nocturnidadFijaMensual * porcentajePendiente) * factorProrrateoPagas;
             const totalNocturnidadAtrasos = difMensualNocturnidad * mesesAtrasos;
             brutoAtrasos += totalNocturnidadAtrasos;
 
             const trNocturnidad = document.createElement('tr');
             trNocturnidad.innerHTML = `
-                <td><strong>Plus Nocturnidad Fijo Mensual</strong></td>
+                <td><strong>Plus Nocturnidad Fijo (Pendiente 1.1%)</strong></td>
                 <td>${nocturnidadFijaMensual.toFixed(2)} €/mes</td>
-                <td>${(nocturnidadFijaMensual * (1 + porcentajeSubidaConvenio)).toFixed(2)} €/mes</td>
+                <td>${(nocturnidadFijaMensual * (1 + 0.04)).toFixed(2)} €/mes</td>
                 <td class="diff-positive">+${difMensualNocturnidad.toFixed(2)} €/mes</td>
                 <td><strong>+${totalNocturnidadAtrasos.toFixed(2)} € (${mesesAtrasos} meses)</strong></td>
             `;
