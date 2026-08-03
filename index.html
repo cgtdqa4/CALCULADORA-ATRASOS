@@ -94,6 +94,13 @@
             background-color: #fff5f5;
         }
 
+        .input-group.highlight-box {
+            background-color: #fdf2f2;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px dashed var(--primary-color);
+        }
+
         .table-wrapper {
             overflow-x: auto;
             margin-bottom: 25px;
@@ -181,9 +188,13 @@
 
 <div class="container">
     <h1>Calculadora de Atrasos y Subida Salarial</h1>
-    <p class="subtitle">Introduce el total acumulado de tus conceptos e indica el total cobrado por Mejora Voluntaria</p>
+    <p class="subtitle">Introduce el total acumulado de tus conceptos, horas semanales e indica el total cobrado por Mejora Voluntaria</p>
 
     <form id="salaryForm" class="grid-form">
+        <div class="input-group highlight-box">
+            <label for="horasSemanales">Horas Semanales (Permite decimales)</label>
+            <input type="number" id="horasSemanales" min="1" max="40" step="0.5" value="40">
+        </div>
         <div class="input-group">
             <label for="horasOrdinarias">Total Horas Ordinarias</label>
             <input type="number" id="horasOrdinarias" min="0" step="0.5" value="0">
@@ -267,23 +278,36 @@
         tbody.innerHTML = '';
 
         let brutoAtrasos = 0;
+        const horasSemanales = parseFloat(document.getElementById('horasSemanales').value) || 40;
+        const factorProporcional = horasSemanales / 40;
 
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
             
-            const subtotalAnt = inputVal * data.ant;
-            const subtotalNue = inputVal * data.nua;
-            const difUnitaria = data.nua - data.ant;
-            const difTotal = subtotalNue - subtotalAnt;
+            let subtotalAnt = inputVal * data.ant;
+            let subtotalNue = inputVal * data.nua;
+            let difUnitaria = data.nua - data.ant;
+            let difTotal = subtotalNue - subtotalAnt;
+            let nombreConcepto = data.nombre;
+
+            // Si es el plus de transporte, aplicamos la proporción en función de las horas semanales sobre 80€ base mensual (o calculado por día proporcional)
+            if (key === 'diasTransporte') {
+                // Ajustamos el valor base y nuevo del transporte proporcionalmente a las horas
+                const transporteAntProporcional = data.ant * factorProporcional;
+                const transporteNueProporcional = data.nua * factorProporcional;
+                difUnitaria = transporteNueProporcional - transporteAntProporcional;
+                difTotal = inputVal * difUnitaria;
+                nombreConcepto = `Plus Transporte (${horasSemanales}h/sem)`;
+            }
 
             brutoAtrasos += difTotal;
 
             if (inputVal > 0) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${data.nombre}</strong> (${inputVal})</td>
-                    <td>${data.ant.toFixed(3)} €</td>
-                    <td>${data.nua.toFixed(2)} €</td>
+                    <td><strong>${nombreConcepto}</strong> (${inputVal})</td>
+                    <td>${(key === 'diasTransporte' ? (data.ant * factorProporcional) : data.ant).toFixed(3)} €</td>
+                    <td>${(key === 'diasTransporte' ? (data.nua * factorProporcional) : data.nua).toFixed(2)} €</td>
                     <td class="diff-positive">+${difUnitaria.toFixed(2)} €</td>
                     <td><strong>+${difTotal.toFixed(2)} €</strong></td>
                 `;
