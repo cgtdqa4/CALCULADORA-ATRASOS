@@ -295,22 +295,22 @@
             <div class="grid-form">
                 <div class="input-group">
                     <label>Categoría en este tramo</label>
-                    <select class="t-categoria" onchange="calcular()">
+                    <select class="t-categoria">
                         <option value="mozo" ${categoria === 'mozo' ? 'selected' : ''}>Mozo</option>
                         <option value="especialista" ${categoria === 'especialista' ? 'selected' : ''}>Mozo Especialista</option>
                     </select>
                 </div>
                 <div class="input-group">
                     <label>Horas Semanales Contrato</label>
-                    <input type="number" class="t-horas" value="${horas}" min="0" max="40" step="0.5" oninput="calcular()">
+                    <input type="number" class="t-horas" value="${horas}" min="0" max="40" step="0.5">
                 </div>
                 <div class="input-group">
                     <label>Fecha Inicio</label>
-                    <input type="date" class="t-inicio" value="${fechaInicio}" onchange="calcular()">
+                    <input type="date" class="t-inicio" value="${fechaInicio}">
                 </div>
                 <div class="input-group">
                     <label>Fecha Fin</label>
-                    <input type="date" class="t-fin" value="${fechaFin}" onchange="calcular()">
+                    <input type="date" class="t-fin" value="${fechaFin}">
                 </div>
             </div>
         `;
@@ -403,7 +403,7 @@
             const totalDomVac = domingoVacAcumulado * porcentajePendiente * factorProrrateoPagas;
             brutoAtrasos += totalDomVac;
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><strong>Plus Domingo Vacational (Acumulado Ene-Ago)</strong></td><td>${domingoVacAcumulado.toFixed(2)} € total</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalDomVac.toFixed(2)} €</strong></td>`;
+            tr.innerHTML = `<td><strong>Plus Domingo Vacacional (Acumulado Ene-Ago)</strong></td><td>${domingoVacAcumulado.toFixed(2)} € total</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalDomVac.toFixed(2)} €</strong></td>`;
             tbody.appendChild(tr);
         }
 
@@ -444,14 +444,14 @@
         document.getElementById('totalNeto').textContent = (netoAtrasos >= 0 ? '+' : '') + netoAtrasos.toFixed(2) + ' €';
     }
 
+    // Eventos dinámicos globales para que recalcule en tiempo real ante cualquier cambio
+    document.addEventListener('input', calcular);
+    document.addEventListener('change', calcular);
+
     // Cargar un tramo limpio a cero al iniciar
     window.onload = function() {
         agregarTramo('', '', 0, 'mozo');
     };
-
-    document.querySelectorAll('#salaryForm input').forEach(input => {
-        input.addEventListener('input', calcular);
-    });
 </script>
 
 </body>
