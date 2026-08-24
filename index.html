@@ -206,39 +206,41 @@
         </div>
         <div class="input-group highlight-box">
             <label for="horasSemanales">Horas Semanales de Contrato (Dec.)</label>
-            <input type="number" id="horasSemanales" min="1" max="40" step="0.5" value="" placeholder="Ej: 40">
+            <input type="number" id="horasSemanales" min="1" max="40" step="0.5" value="" placeholder="Ej: 40 o 24.5">
         </div>
         <div class="input-group highlight-box">
             <label for="mesesAtrasos">Meses de Atrasos a calcular</label>
             <input type="number" id="mesesAtrasos" min="0" step="1" value="" placeholder="Ej: 8">
         </div>
         <div class="input-group highlight-box">
-            <label for="horasMensualesBase">Total Horas Mensuales (para Salario Base)</label>
-            <input type="number" id="horasMensualesBase" min="0" step="0.5" value="" placeholder="Ej: 160">
-        </div>
-        <div class="input-group highlight-box">
             <label for="antiguedadMensual">Plus Antigüedad Bruto (€ actual al mes)</label>
-            <input type="number" id="antiguedadMensual" min="0" step="0.01" value="" placeholder="Ej: 50.00 (Si cobra antigüedad)">
+            <input type="number" id="antiguedadMensual" min="0" step="0.01" value="" placeholder="Ej: 50.00 (0 si no cobra)">
         </div>
         <div class="input-group highlight-box">
             <label for="mesesAntiguedad">Meses cobrando Antigüedad en el periodo</label>
-            <input type="number" id="mesesAntiguedad" min="0" max="12" step="1" value="" placeholder="Ej: 8 (0 si no la cobra)">
+            <input type="number" id="mesesAntiguedad" min="0" max="12" step="1" value="" placeholder="Ej: 8 (0 si no cobra)">
+        </div>
+        <div class="input-group highlight-box">
+            <label for="nocturnidadFijaMensual">Plus Nocturnidad Fijo Mensual (€/mes)</label>
+            <input type="number" id="nocturnidadFijaMensual" min="0" step="0.01" value="" placeholder="Turno noche fijo (Ej: 150.00)">
+        </div>
+        <div class="input-group highlight-box">
+            <label for="mesesNocturnidadFija">Meses cobrando Nocturnidad Fija</label>
+            <input type="number" id="mesesNocturnidadFija" min="0" max="12" step="1" value="" placeholder="Ej: 8">
         </div>
         <div class="input-group highlight-box">
             <label for="porcentajeIrpf">Retención IRPF (%)</label>
             <input type="number" id="porcentajeIrpf" min="0" max="50" step="0.1" value="" placeholder="Ej: 12.5">
         </div>
-        <div class="input-group highlight-box">
-            <label for="nocturnidadFijaMensual">Plus Nocturnidad Fijo Mensual (€ actual)</label>
-            <input type="number" id="nocturnidadFijaMensual" min="0" step="0.01" value="" placeholder="Ej: 120.00 (Si aplica)">
+
+        <!-- HORAS VARIABLES Y SUELTAS -->
+        <div class="input-group">
+            <label for="horasNocturnas">Horas Nocturnas Sueltas (Turno Mañana/Tarde)</label>
+            <input type="number" id="horasNocturnas" min="0" step="0.5" value="" placeholder="Ej: 15">
         </div>
         <div class="input-group">
             <label for="horasOrdinarias">Total Horas Ordinarias (Extra / Realizadas)</label>
             <input type="number" id="horasOrdinarias" min="0" step="0.5" value="" placeholder="0">
-        </div>
-        <div class="input-group">
-            <label for="horasNocturnas">Total Horas Nocturnas (Variables)</label>
-            <input type="number" id="horasNocturnas" min="0" step="0.5" value="" placeholder="0">
         </div>
         <div class="input-group">
             <label for="horasComplDiurnas">Total Horas Compl. Diurnas</label>
@@ -302,7 +304,7 @@
 <script>
     const TARIFAS = {
         horasOrdinarias: { nombre: 'Hora Ordinaria', ant: 10.92, nua: 11.36 },
-        horasNocturnas: { nombre: 'Hora Nocturna (Variable)', ant: 13.15, nua: 11.36 + 2.32 },
+        horasNocturnas: { nombre: 'Hora Nocturna Suelta (Variable)', ant: 13.15, nua: 11.36 + 2.32 },
         horasComplDiurnas: { nombre: 'Hora Compl. Diurna', ant: 10.05, nua: 10.05 },
         horasComplNocturnas: { nombre: 'Hora Compl. Nocturna', ant: 12.28, nua: 12.28 },
         domingostRotativos: { nombre: 'Domingo Rotativo', ant: 85.725, nua: 89.15 },
@@ -328,30 +330,36 @@
         let brutoAtrasos = 0;
         const horasSemanales = parseFloat(document.getElementById('horasSemanales').value) || 0;
         const mesesAtrasos = parseInt(document.getElementById('mesesAtrasos').value) || 0;
-        const horasMensualesBase = parseFloat(document.getElementById('horasMensualesBase').value) || 0;
-        const antiguedadMensual = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
         
-        // Asignación de meses de antigüedad
+        // Cálculo automático de horas mensuales según jornada semanal (semanal * 40 / 9)
+        const horasMensualesBase = (horasSemanales * 40) / 9;
+
+        const antiguedadMensual = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
         const inputMesesAntiguedad = document.getElementById('mesesAntiguedad').value;
         let mesesAntiguedad = 0;
         if (inputMesesAntiguedad !== "") {
             mesesAntiguedad = parseInt(inputMesesAntiguedad) || 0;
         } else if (antiguedadMensual > 0) {
-            mesesAntiguedad = mesesAtrasos; // Si hay importe pero no meses, asume todos los meses
+            mesesAntiguedad = mesesAtrasos;
+        }
+
+        const nocturnidadFijaMensual = parseFloat(document.getElementById('nocturnidadFijaMensual').value) || 0;
+        const inputMesesNocturnidad = document.getElementById('mesesNocturnidadFija').value;
+        let mesesNocturnidadFija = 0;
+        if (inputMesesNocturnidad !== "") {
+            mesesNocturnidadFija = parseInt(inputMesesNocturnidad) || 0;
+        } else if (nocturnidadFijaMensual > 0) {
+            mesesNocturnidadFija = mesesAtrasos;
         }
 
         const porcentajeIrpf = parseFloat(document.getElementById('porcentajeIrpf').value) || 0;
-        const nocturnidadFijaMensual = parseFloat(document.getElementById('nocturnidadFijaMensual').value) || 0;
         const categoria = categoriaSelect.value;
         const mesesEspecialista = parseInt(document.getElementById('mesesComoEspecialista').value) || 0;
 
-        // Factor de prorrateo de 15 pagas sobre 12 meses: 15 / 12 = 1.25
         const factorProrrateoPagas = 15 / 12; 
-        
-        // Porcentaje real pendiente de aplicar (4% total menos 2,9% ya pagado = 1,1%)
         const porcentajePendiente = 0.011;
 
-        // 1. CÁLCULO DEL SALARIO BASE POR TRAMOS Y CATEGORÍA
+        // 1. CÁLCULO DEL SALARIO BASE AUTOMATIZADO
         const diffHoraMozo = 0.40 * (porcentajePendiente / 0.04);
         const diffHoraEspecialista = 0.55 * (porcentajePendiente / 0.04); 
 
@@ -360,10 +368,8 @@
 
         if (categoria === 'cambio_especialista') {
             const mesesMozo = Math.max(0, mesesAtrasos - mesesEspecialista);
-            
             const atrasosMozo = horasMensualesBase * diffHoraMozo * factorProrrateoPagas * mesesMozo;
             const atrasosEspecialista = horasMensualesBase * diffHoraEspecialista * factorProrrateoPagas * mesesEspecialista;
-            
             totalBaseAtrasos = atrasosMozo + atrasosEspecialista;
             desgloseTexto = ` (${mesesMozo}m Mozo + ${mesesEspecialista}m Especialista)`;
         } else if (categoria === 'especialista') {
@@ -374,7 +380,7 @@
             desgloseTexto = ` (Mozo)`;
         }
 
-        if (mesesAtrasos > 0 && horasMensualesBase > 0) {
+        if (mesesAtrasos > 0 && horasSemanales > 0) {
             brutoAtrasos += totalBaseAtrasos;
             const trBase = document.createElement('tr');
             trBase.innerHTML = `
@@ -387,7 +393,7 @@
             tbody.appendChild(trBase);
         }
 
-        // 2. CÁLCULO DE LA ANTIGÜEDAD
+        // 2. ANTIGÜEDAD
         if (mesesAntiguedad > 0 && antiguedadMensual > 0) {
             const difMensualAntiguedad = (antiguedadMensual * porcentajePendiente) * factorProrrateoPagas;
             const totalAntiguedadAtrasos = difMensualAntiguedad * mesesAntiguedad;
@@ -404,24 +410,24 @@
             tbody.appendChild(trAntiguedad);
         }
 
-        // 3. CÁLCULO DEL PLUS NOCTURNIDAD FIJO MENSUAL
-        if (mesesAtrasos > 0 && nocturnidadFijaMensual > 0) {
+        // 3. PLUS NOCTURNIDAD FIJO MENSUAL
+        if (mesesNocturnidadFija > 0 && nocturnidadFijaMensual > 0) {
             const difMensualNocturnidad = (nocturnidadFijaMensual * porcentajePendiente) * factorProrrateoPagas;
-            const totalNocturnidadAtrasos = difMensualNocturnidad * mesesAtrasos;
+            const totalNocturnidadAtrasos = difMensualNocturnidad * mesesNocturnidadFija;
             brutoAtrasos += totalNocturnidadAtrasos;
 
             const trNocturnidad = document.createElement('tr');
             trNocturnidad.innerHTML = `
-                <td><strong>Plus Nocturnidad Fijo (Pendiente 1.1%)</strong></td>
+                <td><strong>Plus Nocturnidad Fijo Cuadrante (Pendiente 1.1%)</strong></td>
                 <td>${nocturnidadFijaMensual.toFixed(2)} €/mes</td>
                 <td>${(nocturnidadFijaMensual * (1 + 0.04)).toFixed(2)} €/mes</td>
                 <td class="diff-positive">+${difMensualNocturnidad.toFixed(2)} €/mes</td>
-                <td><strong>+${totalNocturnidadAtrasos.toFixed(2)} € (${mesesAtrasos} meses)</strong></td>
+                <td><strong>+${totalNocturnidadAtrasos.toFixed(2)} € (${mesesNocturnidadFija} meses)</strong></td>
             `;
             tbody.appendChild(trNocturnidad);
         }
 
-        // 4. CÁLCULO DEL PLUS CONVENIO
+        // 4. PLUS CONVENIO
         if (mesesAtrasos > 0 && horasSemanales > 0) {
             const plusConvenioNuevoMensual = (80 * horasSemanales) / 40;
             const plusConvenioAntiguoMensual = 0;
@@ -440,7 +446,7 @@
             tbody.appendChild(trConvenio);
         }
 
-        // 5. RESTO DE CONCEPTOS POR HORAS / UNIDADES
+        // 5. RESTO DE CONCEPTOS Y HORAS SUELTAS
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
             
@@ -464,7 +470,7 @@
             }
         }
 
-        // 6. MEJORA VOLUNTARIA (DEDUCCIÓN)
+        // 6. MEJORA VOLUNTARIA
         const mejoraVoluntaria = parseFloat(document.getElementById('mejoraVoluntaria').value) || 0;
 
         if (mejoraVoluntaria > 0) {
@@ -479,7 +485,7 @@
             tbody.appendChild(trMV);
         }
 
-        // 7. CÁLCULO DE IRPF
+        // 7. IRPF
         const sujetoAretencion = Math.max(0, brutoAtrasos - mejoraVoluntaria);
         const retencionIrpf = sujetoAretencion * (porcentajeIrpf / 100);
 
