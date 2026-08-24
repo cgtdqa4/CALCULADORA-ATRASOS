@@ -34,7 +34,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 950px;
+            max-width: 980px;
             padding: 25px;
             border-top: 6px solid var(--primary-color);
         }
@@ -76,7 +76,7 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 6px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             outline: none;
             transition: border-color 0.2s;
             background-color: #fff;
@@ -100,6 +100,57 @@
             padding: 10px;
             border-radius: 6px;
             border: 1px dashed var(--primary-color);
+        }
+
+        /* Tramos por Fechas */
+        .jornadas-container {
+            grid-column: 1 / -1;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .jornadas-container h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+
+        .tramo-row {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr auto auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .info-dias {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        .btn-action {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .btn-add {
+            background-color: #2e7d32;
+            color: white;
+            margin-top: 5px;
+        }
+
+        .btn-remove {
+            background-color: #c8102e;
+            color: white;
         }
 
         .table-wrapper {
@@ -172,15 +223,15 @@
             font-size: 1.5rem;
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             body {
                 background-size: 70%;
             }
             .container {
                 padding: 15px;
             }
-            th, td {
-                padding: 8px 10px;
+            .tramo-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -189,7 +240,7 @@
 
 <div class="container">
     <h1>Calculadora de Atrasos y Subida Salarial</h1>
-    <p class="subtitle">Cálculo de diferidos descontando el 2,9% ya abonado (pendiente real: 1,1% sobre subida total)</p>
+    <p class="subtitle">Cálculo exacto por fechas y jornada contratada (Pendiente real: 1,1% sobre subida total)</p>
 
     <form id="salaryForm" class="grid-form">
         <div class="input-group highlight-box">
@@ -200,34 +251,45 @@
                 <option value="cambio_especialista">Promoción: Cambio de Mozo a Mozo Especialista</option>
             </select>
         </div>
+
         <div class="input-group highlight-box" id="grupoMesesEspecialista" style="display: none;">
-            <label for="mesesComoEspecialista">Meses como Mozo Especialista</label>
-            <input type="number" id="mesesComoEspecialista" min="0" max="12" value="" placeholder="Ej: 4 (Si cambió a mitad)">
+            <label for="mesesComoEspecialista">Meses/Días como Mozo Especialista</label>
+            <input type="number" id="mesesComoEspecialista" min="0" max="12" step="0.1" value="" placeholder="Ej: 4.5 meses">
         </div>
-        <div class="input-group highlight-box">
-            <label for="horasSemanales">Horas Semanales de Contrato (Dec.)</label>
-            <input type="number" id="horasSemanales" min="1" max="40" step="0.5" value="" placeholder="Ej: 40 o 24.5">
+
+        <!-- SECCIÓN DE TRAMOS POR FECHA Y HORAS -->
+        <div class="jornadas-container">
+            <h3>Tramos de Jornada por Fechas</h3>
+            <div id="tramosJornada">
+                <div class="tramo-row">
+                    <input type="number" class="horas-tramo" min="1" max="40" step="0.5" placeholder="Horas/Semana (Ej: 24.5)">
+                    <input type="date" class="fecha-inicio" title="Fecha Inicio">
+                    <input type="date" class="fecha-fin" title="Fecha Fin">
+                    <span class="info-dias">0 días</span>
+                    <button type="button" class="btn-action btn-remove" onclick="quitarTramo(this)">✕</button>
+                </div>
+            </div>
+            <button type="button" class="btn-action btn-add" onclick="agregarTramo()">+ Añadir otro tramo de fechas</button>
         </div>
-        <div class="input-group highlight-box">
-            <label for="mesesAtrasos">Meses de Atrasos a calcular</label>
-            <input type="number" id="mesesAtrasos" min="0" step="1" value="" placeholder="Ej: 8">
-        </div>
+
         <div class="input-group highlight-box">
             <label for="antiguedadMensual">Plus Antigüedad Bruto (€ actual al mes)</label>
             <input type="number" id="antiguedadMensual" min="0" step="0.01" value="" placeholder="Ej: 50.00 (0 si no cobra)">
         </div>
         <div class="input-group highlight-box">
-            <label for="mesesAntiguedad">Meses cobrando Antigüedad en el periodo</label>
-            <input type="number" id="mesesAntiguedad" min="0" max="12" step="1" value="" placeholder="Ej: 8 (0 si no cobra)">
+            <label for="mesesAntiguedad">Días/Meses cobrando Antigüedad</label>
+            <input type="number" id="mesesAntiguedad" min="0" max="12" step="0.1" value="" placeholder="Ej: 8 (se asume total si está vacío)">
         </div>
+
         <div class="input-group highlight-box">
             <label for="nocturnidadFijaMensual">Plus Nocturnidad Fijo Mensual (€/mes)</label>
             <input type="number" id="nocturnidadFijaMensual" min="0" step="0.01" value="" placeholder="Turno noche fijo (Ej: 150.00)">
         </div>
         <div class="input-group highlight-box">
-            <label for="mesesNocturnidadFija">Meses cobrando Nocturnidad Fija</label>
-            <input type="number" id="mesesNocturnidadFija" min="0" max="12" step="1" value="" placeholder="Ej: 8">
+            <label for="mesesNocturnidadFija">Días/Meses cobrando Nocturnidad Fija</label>
+            <input type="number" id="mesesNocturnidadFija" min="0" max="12" step="0.1" value="" placeholder="Ej: 8">
         </div>
+
         <div class="input-group highlight-box">
             <label for="porcentajeIrpf">Retención IRPF (%)</label>
             <input type="number" id="porcentajeIrpf" min="0" max="50" step="0.1" value="" placeholder="Ej: 12.5">
@@ -323,74 +385,143 @@
         calcular();
     });
 
+    function agregarTramo() {
+        const container = document.getElementById('tramosJornada');
+        const div = document.createElement('div');
+        div.className = 'tramo-row';
+        div.innerHTML = `
+            <input type="number" class="horas-tramo" min="1" max="40" step="0.5" placeholder="Horas/Semana (Ej: 20)">
+            <input type="date" class="fecha-inicio" title="Fecha Inicio">
+            <input type="date" class="fecha-fin" title="Fecha Fin">
+            <span class="info-dias">0 días</span>
+            <button type="button" class="btn-action btn-remove" onclick="quitarTramo(this)">✕</button>
+        `;
+        container.appendChild(div);
+        
+        div.querySelectorAll('input').forEach(i => {
+            i.addEventListener('input', calcular);
+            i.addEventListener('change', calcular);
+        });
+
+        calcular();
+    }
+
+    function quitarTramo(btn) {
+        const rows = document.querySelectorAll('.tramo-row');
+        if (rows.length > 1) {
+            btn.parentElement.remove();
+            calcular();
+        }
+    }
+
+    function obtenerTramosJornada() {
+        const tramos = [];
+        document.querySelectorAll('.tramo-row').forEach(row => {
+            const h = parseFloat(row.querySelector('.horas-tramo').value) || 0;
+            const fInicio = row.querySelector('.fecha-inicio').value;
+            const fFin = row.querySelector('.fecha-fin').value;
+            const spanDias = row.querySelector('.info-dias');
+
+            if (h > 0 && fInicio && fFin) {
+                const d1 = new Date(fInicio);
+                const d2 = new Date(fFin);
+                if (d2 >= d1) {
+                    const diffTime = Math.abs(d2 - d1);
+                    const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Incluye el día final
+                    spanDias.textContent = `${dias} días`;
+                    // Convertir días a equivalente mensual preciso (promedio 30.4167 días/mes)
+                    const mesesEquivalentes = dias / 30.4167;
+                    tramos.push({ horasSemanales: h, dias: dias, meses: mesesEquivalentes });
+                } else {
+                    spanDias.textContent = 'Fecha inválida';
+                }
+            } else {
+                spanDias.textContent = '0 días';
+            }
+        });
+        return tramos;
+    }
+
     function calcular() {
         const tbody = document.getElementById('resultsTable');
         tbody.innerHTML = '';
 
         let brutoAtrasos = 0;
-        const horasSemanales = parseFloat(document.getElementById('horasSemanales').value) || 0;
-        const mesesAtrasos = parseInt(document.getElementById('mesesAtrasos').value) || 0;
-        
-        // Cálculo automático de horas mensuales según jornada semanal (semanal * 40 / 9)
-        const horasMensualesBase = (horasSemanales * 40) / 9;
+        const tramosJornada = obtenerTramosJornada();
+
+        const totalDiasCalculados = tramosJornada.reduce((acc, t) => acc + t.dias, 0);
+        const totalMesesCalculados = tramosJornada.reduce((acc, t) => acc + t.meses, 0);
 
         const antiguedadMensual = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
         const inputMesesAntiguedad = document.getElementById('mesesAntiguedad').value;
-        let mesesAntiguedad = 0;
-        if (inputMesesAntiguedad !== "") {
-            mesesAntiguedad = parseInt(inputMesesAntiguedad) || 0;
-        } else if (antiguedadMensual > 0) {
-            mesesAntiguedad = mesesAtrasos;
-        }
+        let mesesAntiguedad = inputMesesAntiguedad !== "" ? (parseFloat(inputMesesAntiguedad) || 0) : totalMesesCalculados;
 
         const nocturnidadFijaMensual = parseFloat(document.getElementById('nocturnidadFijaMensual').value) || 0;
         const inputMesesNocturnidad = document.getElementById('mesesNocturnidadFija').value;
-        let mesesNocturnidadFija = 0;
-        if (inputMesesNocturnidad !== "") {
-            mesesNocturnidadFija = parseInt(inputMesesNocturnidad) || 0;
-        } else if (nocturnidadFijaMensual > 0) {
-            mesesNocturnidadFija = mesesAtrasos;
-        }
+        let mesesNocturnidadFija = inputMesesNocturnidad !== "" ? (parseFloat(inputMesesNocturnidad) || 0) : totalMesesCalculados;
 
         const porcentajeIrpf = parseFloat(document.getElementById('porcentajeIrpf').value) || 0;
         const categoria = categoriaSelect.value;
-        const mesesEspecialista = parseInt(document.getElementById('mesesComoEspecialista').value) || 0;
+        const mesesEspecialista = parseFloat(document.getElementById('mesesComoEspecialista').value) || 0;
 
         const factorProrrateoPagas = 15 / 12; 
         const porcentajePendiente = 0.011;
 
-        // 1. CÁLCULO DEL SALARIO BASE AUTOMATIZADO
         const diffHoraMozo = 0.40 * (porcentajePendiente / 0.04);
-        const diffHoraEspecialista = 0.55 * (porcentajePendiente / 0.04); 
+        const diffHoraEspecialista = 0.55 * (porcentajePendiente / 0.04);
 
+        // 1. CÁLCULO DE SALARIO BASE Y PLUS CONVENIO BASADO EN FECHAS
         let totalBaseAtrasos = 0;
-        let desgloseTexto = "";
+        let totalConvenioAtrasos = 0;
 
-        if (categoria === 'cambio_especialista') {
-            const mesesMozo = Math.max(0, mesesAtrasos - mesesEspecialista);
-            const atrasosMozo = horasMensualesBase * diffHoraMozo * factorProrrateoPagas * mesesMozo;
-            const atrasosEspecialista = horasMensualesBase * diffHoraEspecialista * factorProrrateoPagas * mesesEspecialista;
-            totalBaseAtrasos = atrasosMozo + atrasosEspecialista;
-            desgloseTexto = ` (${mesesMozo}m Mozo + ${mesesEspecialista}m Especialista)`;
-        } else if (categoria === 'especialista') {
-            totalBaseAtrasos = horasMensualesBase * diffHoraEspecialista * factorProrrateoPagas * mesesAtrasos;
-            desgloseTexto = ` (Mozo Especialista)`;
-        } else {
-            totalBaseAtrasos = horasMensualesBase * diffHoraMozo * factorProrrateoPagas * mesesAtrasos;
-            desgloseTexto = ` (Mozo)`;
-        }
+        if (tramosJornada.length > 0) {
+            let mesesComputados = 0;
 
-        if (mesesAtrasos > 0 && horasSemanales > 0) {
-            brutoAtrasos += totalBaseAtrasos;
-            const trBase = document.createElement('tr');
-            trBase.innerHTML = `
-                <td><strong>Salario Base (Pendiente 1.1%, 15 pagas)${desgloseTexto}</strong></td>
-                <td>-</td>
-                <td>-</td>
-                <td class="diff-positive">Según tramos</td>
-                <td><strong>+${totalBaseAtrasos.toFixed(2)} € (${mesesAtrasos} meses)</strong></td>
-            `;
-            tbody.appendChild(trBase);
+            tramosJornada.forEach(tramo => {
+                const horasMensualesBase = (tramo.horasSemanales * 40) / 9;
+
+                if (categoria === 'cambio_especialista') {
+                    const propEspecialista = Math.min(tramo.meses, Math.max(0, mesesEspecialista - mesesComputados));
+                    const propMozo = tramo.meses - propEspecialista;
+                    
+                    totalBaseAtrasos += (horasMensualesBase * diffHoraMozo * factorProrrateoPagas * propMozo) + 
+                                       (horasMensualesBase * diffHoraEspecialista * factorProrrateoPagas * propEspecialista);
+                    mesesComputados += tramo.meses;
+                } else if (categoria === 'especialista') {
+                    totalBaseAtrasos += horasMensualesBase * diffHoraEspecialista * factorProrrateoPagas * tramo.meses;
+                } else {
+                    totalBaseAtrasos += horasMensualesBase * diffHoraMozo * factorProrrateoPagas * tramo.meses;
+                }
+
+                const plusConvenioNuevoMensual = (80 * tramo.horasSemanales) / 40;
+                totalConvenioAtrasos += plusConvenioNuevoMensual * tramo.meses;
+            });
+
+            if (totalBaseAtrasos > 0) {
+                brutoAtrasos += totalBaseAtrasos;
+                const trBase = document.createElement('tr');
+                trBase.innerHTML = `
+                    <td><strong>Salario Base (Pendiente 1.1%, 15 pagas)</strong></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td class="diff-positive">Por tramos de fecha</td>
+                    <td><strong>+${totalBaseAtrasos.toFixed(2)} € (${totalDiasCalculados} días / ${totalMesesCalculados.toFixed(2)} m)</strong></td>
+                `;
+                tbody.appendChild(trBase);
+            }
+
+            if (totalConvenioAtrasos > 0) {
+                brutoAtrasos += totalConvenioAtrasos;
+                const trConvenio = document.createElement('tr');
+                trConvenio.innerHTML = `
+                    <td><strong>Plus Convenio (Prorrateado por días)</strong></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td class="diff-positive">Por tramos de fecha</td>
+                    <td><strong>+${totalConvenioAtrasos.toFixed(2)} € (${totalDiasCalculados} días)</strong></td>
+                `;
+                tbody.appendChild(trConvenio);
+            }
         }
 
         // 2. ANTIGÜEDAD
@@ -405,7 +536,7 @@
                 <td>${antiguedadMensual.toFixed(2)} €/mes</td>
                 <td>${(antiguedadMensual * (1 + 0.04)).toFixed(2)} €/mes</td>
                 <td class="diff-positive">+${difMensualAntiguedad.toFixed(2)} €/mes</td>
-                <td><strong>+${totalAntiguedadAtrasos.toFixed(2)} € (${mesesAntiguedad} meses)</strong></td>
+                <td><strong>+${totalAntiguedadAtrasos.toFixed(2)} € (${mesesAntiguedad.toFixed(2)} m)</strong></td>
             `;
             tbody.appendChild(trAntiguedad);
         }
@@ -422,34 +553,14 @@
                 <td>${nocturnidadFijaMensual.toFixed(2)} €/mes</td>
                 <td>${(nocturnidadFijaMensual * (1 + 0.04)).toFixed(2)} €/mes</td>
                 <td class="diff-positive">+${difMensualNocturnidad.toFixed(2)} €/mes</td>
-                <td><strong>+${totalNocturnidadAtrasos.toFixed(2)} € (${mesesNocturnidadFija} meses)</strong></td>
+                <td><strong>+${totalNocturnidadAtrasos.toFixed(2)} € (${mesesNocturnidadFija.toFixed(2)} m)</strong></td>
             `;
             tbody.appendChild(trNocturnidad);
         }
 
-        // 4. PLUS CONVENIO
-        if (mesesAtrasos > 0 && horasSemanales > 0) {
-            const plusConvenioNuevoMensual = (80 * horasSemanales) / 40;
-            const plusConvenioAntiguoMensual = 0;
-            const difMensualConvenio = plusConvenioNuevoMensual - plusConvenioAntiguoMensual;
-            const totalConvenioAtrasos = difMensualConvenio * mesesAtrasos;
-
-            brutoAtrasos += totalConvenioAtrasos;
-            const trConvenio = document.createElement('tr');
-            trConvenio.innerHTML = `
-                <td><strong>Plus Convenio (${horasSemanales}h/sem, 12 meses)</strong></td>
-                <td>${plusConvenioAntiguoMensual.toFixed(2)} € / mes</td>
-                <td>${plusConvenioNuevoMensual.toFixed(2)} € / mes</td>
-                <td class="diff-positive">+${difMensualConvenio.toFixed(2)} €/mes</td>
-                <td><strong>+${totalConvenioAtrasos.toFixed(2)} € (${mesesAtrasos} meses)</strong></td>
-            `;
-            tbody.appendChild(trConvenio);
-        }
-
-        // 5. RESTO DE CONCEPTOS Y HORAS SUELTAS
+        // 4. RESTO DE CONCEPTOS Y HORAS SUELTAS
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
-            
             const subtotalAnt = inputVal * data.ant;
             const subtotalNue = inputVal * data.nua;
             const difUnitaria = data.nua - data.ant;
@@ -470,9 +581,8 @@
             }
         }
 
-        // 6. MEJORA VOLUNTARIA
+        // 5. MEJORA VOLUNTARIA
         const mejoraVoluntaria = parseFloat(document.getElementById('mejoraVoluntaria').value) || 0;
-
         if (mejoraVoluntaria > 0) {
             const trMV = document.createElement('tr');
             trMV.innerHTML = `
@@ -485,7 +595,7 @@
             tbody.appendChild(trMV);
         }
 
-        // 7. IRPF
+        // 6. IRPF
         const sujetoAretencion = Math.max(0, brutoAtrasos - mejoraVoluntaria);
         const retencionIrpf = sujetoAretencion * (porcentajeIrpf / 100);
 
@@ -502,7 +612,7 @@
         }
 
         if (tbody.innerHTML === '') {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">Introduce tus datos para calcular los atrasos acumulados</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">Selecciona fechas y horas para calcular los atrasos</td></tr>`;
         }
 
         const netoAtrasos = sujetoAretencion - retencionIrpf;
@@ -516,6 +626,11 @@
     document.querySelectorAll('#salaryForm input, #salaryForm select').forEach(input => {
         input.addEventListener('input', calcular);
         input.addEventListener('change', calcular);
+    });
+
+    document.querySelectorAll('.tramo-row input').forEach(i => {
+        i.addEventListener('input', calcular);
+        i.addEventListener('change', calcular);
     });
 
     calcular();
