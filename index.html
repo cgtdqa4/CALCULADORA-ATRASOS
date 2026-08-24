@@ -202,7 +202,7 @@
         </div>
         <div class="input-group highlight-box" id="grupoMesesEspecialista" style="display: none;">
             <label for="mesesComoEspecialista">Meses como Mozo Especialista</label>
-            <input type="number" id="mesesComoEspecialista" min="0" max="12" value="0" placeholder="Ej: 5 (Enero-Agosto)">
+            <input type="number" id="mesesComoEspecialista" min="0" max="12" value="" placeholder="Ej: 10 (Marzo a Diciembre)">
         </div>
         <div class="input-group highlight-box">
             <label for="horasSemanales">Horas Semanales de Contrato (Dec.)</label>
@@ -322,7 +322,11 @@
         const mesesAtrasos = parseInt(document.getElementById('mesesAtrasos').value) || 0;
         const horasMensualesBase = parseFloat(document.getElementById('horasMensualesBase').value) || 0;
         const antiguedadMensual = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
-        const mesesAntiguedad = parseInt(document.getElementById('mesesAntiguedad').value) || mesesAtrasos;
+        
+        // Si no se introduce un valor de meses de antigüedad, por defecto toma todos los meses de atrasos
+        const inputMesesAntiguedad = document.getElementById('mesesAntiguedad').value;
+        const mesesAntiguedad = inputMesesAntiguedad !== "" ? parseInt(inputMesesAntiguedad) || 0 : mesesAtrasos;
+        
         const nocturnidadFijaMensual = parseFloat(document.getElementById('nocturnidadFijaMensual').value) || 0;
         const categoria = categoriaSelect.value;
         const mesesEspecialista = parseInt(document.getElementById('mesesComoEspecialista').value) || 0;
@@ -333,35 +337,43 @@
         // Porcentaje real pendiente de aplicar (4% total menos 2,9% ya pagado = 1,1%)
         const porcentajePendiente = 0.011;
 
-        // 1. CÁLCULO DEL SALARIO BASE Y DIFERENCIA DE CATEGORÍA
-        const diffSalarioBaseHora = 0.40 * (porcentajePendiente / 0.04);
-        const difMensualBase = horasMensualesBase * diffSalarioBaseHora * factorProrrateoPagas;
-        let totalBaseAtrasos = difMensualBase * mesesAtrasos;
+        // 1. CÁLCULO DEL SALARIO BASE POR TRAMOS Y CATEGORÍA
+        const diffHoraMozo = 0.40 * (porcentajePendiente / 0.04);
+        const diffHoraEspecialista = 0.55 * (porcentajePendiente / 0.04); 
 
-        // Si ha habido cambio de categoría de Mozo a Mozo Especialista
-        let ajusteCategoria = 0;
-        if (categoria === 'cambio_especialista' && mesesEspecialista > 0) {
-            // Estimación del incremento por cambio de categoría (aprox 5% en salario base hora)
-            const plusHoraEspecialista = 0.55 * (porcentajePendiente / 0.04); 
-            ajusteCategoria = horasMensualesBase * plusHoraEspecialista * factorProrrateoPagas * mesesEspecialista;
-            totalBaseAtrasos += ajusteCategoria;
+        let totalBaseAtrasos = 0;
+        let desgloseTexto = "";
+
+        if (categoria === 'cambio_especialista') {
+            const mesesMozo = Math.max(0, mesesAtrasos - mesesEspecialista);
+            
+            const atrasosMozo = horasMensualesBase * diffHoraMozo * factorProrrateoPagas * mesesMozo;
+            const atrasosEspecialista = horasMensualesBase * diffHoraEspecialista * factorProrrateoPagas * mesesEspecialista;
+            
+            totalBaseAtrasos = atrasosMozo + atrasosEspecialista;
+            desgloseTexto = ` (${mesesMozo}m Mozo + ${mesesEspecialista}m Especialista)`;
+        } else if (categoria === 'especialista') {
+            totalBaseAtrasos = horasMensualesBase * diffHoraEspecialista * factorProrrateoPagas * mesesAtrasos;
+            desgloseTexto = ` (Mozo Especialista)`;
+        } else {
+            totalBaseAtrasos = horasMensualesBase * diffHoraMozo * factorProrrateoPagas * mesesAtrasos;
+            desgloseTexto = ` (Mozo)`;
         }
 
         if (mesesAtrasos > 0 && horasMensualesBase > 0) {
             brutoAtrasos += totalBaseAtrasos;
             const trBase = document.createElement('tr');
-            let textoCat = categoria === 'cambio_especialista' ? ` (inc. ${mesesEspecialista} m. de Especialista)` : '';
             trBase.innerHTML = `
-                <td><strong>Salario Base (Pendiente 1.1%, 15 pagas)${textoCat}</strong></td>
+                <td><strong>Salario Base (Pendiente 1.1%, 15 pagas)${desgloseTexto}</strong></td>
                 <td>-</td>
                 <td>-</td>
-                <td class="diff-positive">+${(diffSalarioBaseHora * factorProrrateoPagas).toFixed(2)} €/h mes</td>
+                <td class="diff-positive">Según tramos</td>
                 <td><strong>+${totalBaseAtrasos.toFixed(2)} € (${mesesAtrasos} meses)</strong></td>
             `;
             tbody.appendChild(trBase);
         }
 
-        // 2. CÁLCULO DE LA ANTIGÜEDAD (por los meses indicados en los que ha tenido antigüedad)
+        // 2. CÁLCULO DE LA ANTIGÜEDAD (por los meses exactos indicados)
         if (mesesAntiguedad > 0 && antiguedadMensual > 0) {
             const difMensualAntiguedad = (antiguedadMensual * porcentajePendiente) * factorProrrateoPagas;
             const totalAntiguedadAtrasos = difMensualAntiguedad * mesesAntiguedad;
@@ -369,7 +381,7 @@
 
             const trAntiguedad = document.createElement('tr');
             trAntiguedad.innerHTML = `
-                <td><strong>Plus Antigüedad (Pendiente 1.1%, ${mesesAntiguedad} meses aplicados)</strong></td>
+                <td><strong>Plus Antigüedad (Pendiente 1.1%)</strong></td>
                 <td>${antiguedadMensual.toFixed(2)} €/mes</td>
                 <td>${(antiguedadMensual * (1 + 0.04)).toFixed(2)} €/mes</td>
                 <td class="diff-positive">+${difMensualAntiguedad.toFixed(2)} €/mes</td>
