@@ -184,7 +184,7 @@
 
 <div class="container">
     <h1>Calculadora de Atrasos y Subida Salarial</h1>
-    <p class="subtitle">Desglose exacto de tramos horarios y turnos (Enero - Agosto). Cálculo de la subida del 4% descontando el 2,9% ya abonado por la empresa (pendiente real: 1,1%).</p>
+    <p class="subtitle">Desglose exacto de tramos horarios y turnos. Cálculo de la subida del 4% descontando el 2,9% ya abonado por la empresa (pendiente real: 1,1%).</p>
 
     <!-- TRAMOS FECHAS Y HORAS -->
     <div id="tramosContainer"></div>
@@ -205,15 +205,15 @@
             <input type="number" id="horasPlusLogistica" min="0" max="40" step="0.01" value="0" placeholder="Ej: 37.5">
         </div>
         <div class="input-group highlight-box">
-            <label for="mesesPlusLogistica">Meses cobrando Plus Logística (Ene-Ago)</label>
-            <input type="number" id="mesesPlusLogistica" min="0" max="8" step="0.5" value="0" placeholder="Ej: 8">
+            <label for="mesesPlusLogistica">Meses cobrando Plus Logística</label>
+            <input type="number" id="mesesPlusLogistica" min="0" max="12" step="0.5" value="0" placeholder="Ej: 8">
         </div>
         <div class="input-group highlight-box">
-            <label for="transporteAcumulado">Suma Total Plus Transporte (€ Ene-Ago)</label>
+            <label for="transporteAcumulado">Suma Total Plus Transporte (€)</label>
             <input type="number" id="transporteAcumulado" min="0" step="0.01" value="0" placeholder="Ej: 1047">
         </div>
         <div class="input-group highlight-box">
-            <label for="domingoVacAcumulado">Suma Total Plus Domingo Vac. (€ Ene-Ago)</label>
+            <label for="domingoVacAcumulado">Suma Total Plus Domingo Vac. (€)</label>
             <input type="number" id="domingoVacAcumulado" min="0" step="0.01" value="0" placeholder="Importe bruto cobrado">
         </div>
         <div class="input-group highlight-box">
@@ -395,7 +395,7 @@
             tbody.appendChild(tr);
         }
 
-        // 3. PLUS LOGÍSTICA (A 12 PAGAS E ÍNTEGRO: SIN FACTOR 15/12 Y SIN 1.1%)
+        // 3. PLUS LOGÍSTICA (A 12 PAGAS E ÍNTEGRO)
         const horasPlusLogistica = parseFloat(document.getElementById('horasPlusLogistica').value) || 0;
         const mesesPlusLogistica = parseFloat(document.getElementById('mesesPlusLogistica').value) || 0;
         if (horasPlusLogistica > 0 && mesesPlusLogistica > 0) {
@@ -413,23 +413,23 @@
             tbody.appendChild(tr);
         }
 
-        // 4. PLUS TRANSPORTE (SUMA TOTAL ACUMULADA ENERO-AGOSTO)
+        // 4. PLUS TRANSPORTE (SUMA TOTAL ACUMULADA)
         const transporteAcumulado = parseFloat(document.getElementById('transporteAcumulado').value) || 0;
         if (transporteAcumulado > 0) {
             const totalTrans = transporteAcumulado * porcentajePendiente * factorProrrateoPagas;
             brutoAtrasos += totalTrans;
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><strong>Plus Transporte (Acumulado Ene-Ago)</strong></td><td>${transporteAcumulado.toFixed(2)} € total</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalTrans.toFixed(2)} €</strong></td>`;
+            tr.innerHTML = `<td><strong>Plus Transporte (Acumulado)</strong></td><td>${transporteAcumulado.toFixed(2)} € total</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalTrans.toFixed(2)} €</strong></td>`;
             tbody.appendChild(tr);
         }
 
-        // 5. PLUS DOMINGO VACACIONAL (SUMA TOTAL ACUMULADA ENERO-AGOSTO)
+        // 5. PLUS DOMINGO VACACIONAL (SUMA TOTAL ACUMULADA)
         const domingoVacAcumulado = parseFloat(document.getElementById('domingoVacAcumulado').value) || 0;
         if (domingoVacAcumulado > 0) {
             const totalDomVac = domingoVacAcumulado * porcentajePendiente * factorProrrateoPagas;
             brutoAtrasos += totalDomVac;
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><strong>Plus Domingo Vacacional (Acumulado Ene-Ago)</strong></td><td>${domingoVacAcumulado.toFixed(2)} € total</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalDomVac.toFixed(2)} €</strong></td>`;
+            tr.innerHTML = `<td><strong>Plus Domingo Vacacional (Acumulado)</strong></td><td>${domingoVacAcumulado.toFixed(2)} € total</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalDomVac.toFixed(2)} €</strong></td>`;
             tbody.appendChild(tr);
         }
 
