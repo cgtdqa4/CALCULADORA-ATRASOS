@@ -194,47 +194,47 @@
     <form id="salaryForm" class="grid-form" style="margin-bottom: 20px;">
         <div class="input-group highlight-box">
             <label for="antiguedadMensual">Plus Antigüedad Bruto (€ actual/mes)</label>
-            <input type="number" id="antiguedadMensual" min="0" step="0.01" placeholder="Ej: 50.00 (0 si no cobra)">
+            <input type="number" id="antiguedadMensual" min="0" step="0.01" value="0">
         </div>
         <div class="input-group highlight-box">
             <label for="mesesAntiguedad">Días/Meses cobrando Antigüedad</label>
-            <input type="number" id="mesesAntiguedad" min="0" step="1" placeholder="Ej: 8 meses o 235 días">
+            <input type="number" id="mesesAntiguedad" min="0" step="1" value="0">
         </div>
         <div class="input-group highlight-box">
             <label for="nocturnidadFijaMensual">Plus Nocturnidad Fijo Mensual (€/mes)</label>
-            <input type="number" id="nocturnidadFijaMensual" min="0" step="0.01" placeholder="Ej: 150.00">
+            <input type="number" id="nocturnidadFijaMensual" min="0" step="0.01" value="0">
         </div>
         <div class="input-group highlight-box">
             <label for="porcentajeIrpf">Retención IRPF (%)</label>
-            <input type="number" id="porcentajeIrpf" min="0" max="50" step="0.1" placeholder="Ej: 12.5">
+            <input type="number" id="porcentajeIrpf" min="0" max="50" step="0.1" value="0">
         </div>
         <div class="input-group">
             <label for="horasNocturnas">Horas Nocturnas Sueltas</label>
-            <input type="number" id="horasNocturnas" min="0" step="0.5" placeholder="Ej: 0.5">
+            <input type="number" id="horasNocturnas" min="0" step="0.5" value="0">
         </div>
         <div class="input-group">
             <label for="horasOrdinarias">Total Horas Ordinarias Extra</label>
-            <input type="number" id="horasOrdinarias" min="0" step="0.5" placeholder="0">
+            <input type="number" id="horasOrdinarias" min="0" step="0.5" value="0">
         </div>
         <div class="input-group">
             <label for="horasComplDiurnas">Total Horas Compl. Diurnas</label>
-            <input type="number" id="horasComplDiurnas" min="0" step="0.5" placeholder="0">
+            <input type="number" id="horasComplDiurnas" min="0" step="0.5" value="0">
         </div>
         <div class="input-group">
             <label for="horasComplNocturnas">Total Horas Compl. Nocturnas</label>
-            <input type="number" id="horasComplNocturnas" min="0" step="0.5" placeholder="0">
+            <input type="number" id="horasComplNocturnas" min="0" step="0.5" value="0">
         </div>
         <div class="input-group">
             <label for="domingostRotativos">Total Domingos Rotativos</label>
-            <input type="number" id="domingostRotativos" min="0" placeholder="0">
+            <input type="number" id="domingostRotativos" min="0" value="0">
         </div>
         <div class="input-group">
             <label for="plusFestivoComple">Total Plus Festivo/Dom. Comple</label>
-            <input type="number" id="plusFestivoComple" min="0" placeholder="0">
+            <input type="number" id="plusFestivoComple" min="0" value="0">
         </div>
         <div class="input-group deduction">
             <label for="mejoraVoluntaria">Mejora Voluntaria (€ a descontar)</label>
-            <input type="number" id="mejoraVoluntaria" min="0" step="0.01" placeholder="Ej: 150.00">
+            <input type="number" id="mejoraVoluntaria" min="0" step="0.01" value="0">
         </div>
     </form>
 
@@ -273,7 +273,7 @@
 
     let tramoId = 0;
 
-    function agregarTramo(fechaInicio = '', fechaFin = '', horas = 40, categoria = 'mozo') {
+    function agregarTramo(fechaInicio = '', fechaFin = '', horas = 0, categoria = 'mozo') {
         tramoId++;
         const container = document.getElementById('tramosContainer');
         const div = document.createElement('div');
@@ -294,7 +294,7 @@
                 </div>
                 <div class="input-group">
                     <label>Horas Semanales Contrato</label>
-                    <input type="number" class="t-horas" value="${horas}" min="1" max="40" step="0.5" oninput="calcular()">
+                    <input type="number" class="t-horas" value="${horas}" min="0" max="40" step="0.5" oninput="calcular()">
                 </div>
                 <div class="input-group">
                     <label>Fecha Inicio</label>
@@ -403,6 +403,10 @@
         const sujetoAretencion = Math.max(0, brutoAtrasos - mejoraVoluntaria);
         const retencionIrpf = sujetoAretencion * (porcentajeIrpf / 100);
 
+        if (tbody.innerHTML === '') {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">Introduce tus datos para calcular los atrasos acumulados</td></tr>`;
+        }
+
         const netoAtrasos = sujetoAretencion - retencionIrpf;
 
         document.getElementById('totalBruto').textContent = '+' + brutoAtrasos.toFixed(2) + ' €';
@@ -411,11 +415,9 @@
         document.getElementById('totalNeto').textContent = (netoAtrasos >= 0 ? '+' : '') + netoAtrasos.toFixed(2) + ' €';
     }
 
-    // Tramos por defecto de la imagen del usuario
+    // Cargar un tramo limpio a cero al iniciar
     window.onload = function() {
-        agregarTramo('2026-03-11', '2026-05-12', 24.5, 'mozo');
-        agregarTramo('2026-03-13', '2026-06-10', 40, 'mozo');
-        agregarTramo('2026-06-11', '2026-08-31', 40, 'especialista');
+        agregarTramo('', '', 0, 'mozo');
     };
 
     document.querySelectorAll('#salaryForm input').forEach(input => {
