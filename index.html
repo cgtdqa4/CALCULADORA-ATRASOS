@@ -6,7 +6,7 @@
     <title>Calculadora de Atrasos y Subida Salarial - CGT</title>
     <style>
         :root {
-            --primary-color: #c8102e; /* Rojo CGT */
+            --primary-color: #c8102e;
             --dark-color: #1a1a1a;
             --light-bg: rgba(255, 255, 255, 0.94);
         }
@@ -53,11 +53,51 @@
             font-size: 0.95rem;
         }
 
+        .tramo-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .tramo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+
+        .btn-remove {
+            background: #c8102e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn-add {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
         .grid-form {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
         }
 
         .input-group {
@@ -66,33 +106,19 @@
         }
 
         .input-group label {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: bold;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .input-group input, .input-group select {
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.2s;
             background-color: #fff;
-        }
-
-        .input-group input:focus, .input-group select:focus {
-            border-color: var(--primary-color);
-        }
-
-        .input-group.deduction label {
-            color: #c8102e;
-        }
-
-        .input-group.deduction input {
-            border-color: #f5c6cb;
-            background-color: #fff5f5;
         }
 
         .input-group.highlight-box {
@@ -100,57 +126,6 @@
             padding: 10px;
             border-radius: 6px;
             border: 1px dashed var(--primary-color);
-        }
-
-        /* Tramos por Fechas */
-        .jornadas-container {
-            grid-column: 1 / -1;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-left: 4px solid var(--primary-color);
-            padding: 15px;
-            border-radius: 6px;
-        }
-
-        .jornadas-container h3 {
-            font-size: 1rem;
-            margin-bottom: 10px;
-            color: var(--dark-color);
-        }
-
-        .tramo-row {
-            display: grid;
-            grid-template-columns: 1.2fr 1fr 1fr auto auto;
-            gap: 10px;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-
-        .info-dias {
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #555;
-            white-space: nowrap;
-        }
-
-        .btn-action {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.85rem;
-        }
-
-        .btn-add {
-            background-color: #2e7d32;
-            color: white;
-            margin-top: 5px;
-        }
-
-        .btn-remove {
-            background-color: #c8102e;
-            color: white;
         }
 
         .table-wrapper {
@@ -167,17 +142,17 @@
         }
 
         th, td {
-            padding: 12px 15px;
+            padding: 10px 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         th {
             background-color: var(--dark-color);
             color: white;
             text-transform: uppercase;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             letter-spacing: 0.5px;
         }
 
@@ -185,15 +160,8 @@
             background-color: #f8f9fa;
         }
 
-        .diff-positive {
-            color: #2e7d32;
-            font-weight: bold;
-        }
-
-        .diff-negative {
-            color: #c8102e;
-            font-weight: bold;
-        }
+        .diff-positive { color: #2e7d32; font-weight: bold; }
+        .diff-negative { color: #c8102e; font-weight: bold; }
 
         .total-box {
             background-color: var(--dark-color);
@@ -207,122 +175,66 @@
             gap: 15px;
         }
 
-        .total-box div span {
-            display: block;
-            font-size: 0.85rem;
-            color: #ccc;
-        }
-
-        .total-box div strong {
-            font-size: 1.4rem;
-            color: #fff;
-        }
-
-        .total-box .increment {
-            color: #4caf50;
-            font-size: 1.5rem;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                background-size: 70%;
-            }
-            .container {
-                padding: 15px;
-            }
-            .tramo-row {
-                grid-template-columns: 1fr;
-            }
-        }
+        .total-box div span { display: block; font-size: 0.85rem; color: #ccc; }
+        .total-box div strong { font-size: 1.3rem; color: #fff; }
+        .total-box .increment { color: #4caf50; font-size: 1.5rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Calculadora de Atrasos y Subida Salarial</h1>
-    <p class="subtitle">Cálculo exacto por fechas y jornada contratada (Pendiente real: 1,1% sobre subida total)</p>
+    <p class="subtitle">Desglose exacto de tramos horarias y turnos (Enero - Agosto)</p>
 
-    <form id="salaryForm" class="grid-form">
+    <!-- TRAMOS FECHAS Y HORAS -->
+    <div id="tramosContainer"></div>
+    <button type="button" class="btn-add" onclick="agregarTramo()">+ Añadir otro tramo de turno</button>
+
+    <!-- CONCEPTOS ADICIONALES -->
+    <form id="salaryForm" class="grid-form" style="margin-bottom: 20px;">
         <div class="input-group highlight-box">
-            <label for="categoria">Categoría / Promoción Profesional</label>
-            <select id="categoria">
-                <option value="mozo">Mozo (Sin cambio)</option>
-                <option value="especialista">Mozo Especialista (Sin cambio)</option>
-                <option value="cambio_especialista">Promoción: Cambio de Mozo a Mozo Especialista</option>
-            </select>
-        </div>
-
-        <div class="input-group highlight-box" id="grupoMesesEspecialista" style="display: none;">
-            <label for="mesesComoEspecialista">Meses/Días como Mozo Especialista</label>
-            <input type="number" id="mesesComoEspecialista" min="0" max="12" step="0.1" value="" placeholder="Ej: 4.5 meses">
-        </div>
-
-        <!-- SECCIÓN DE TRAMOS POR FECHA Y HORAS -->
-        <div class="jornadas-container">
-            <h3>Tramos de Jornada por Fechas</h3>
-            <div id="tramosJornada">
-                <div class="tramo-row">
-                    <input type="number" class="horas-tramo" min="1" max="40" step="0.5" placeholder="Horas/Semana (Ej: 24.5)">
-                    <input type="date" class="fecha-inicio" title="Fecha Inicio">
-                    <input type="date" class="fecha-fin" title="Fecha Fin">
-                    <span class="info-dias">0 días</span>
-                    <button type="button" class="btn-action btn-remove" onclick="quitarTramo(this)">✕</button>
-                </div>
-            </div>
-            <button type="button" class="btn-action btn-add" onclick="agregarTramo()">+ Añadir otro tramo de fechas</button>
-        </div>
-
-        <div class="input-group highlight-box">
-            <label for="antiguedadMensual">Plus Antigüedad Bruto (€ actual al mes)</label>
-            <input type="number" id="antiguedadMensual" min="0" step="0.01" value="" placeholder="Ej: 50.00 (0 si no cobra)">
+            <label for="antiguedadMensual">Plus Antigüedad Bruto (€ actual/mes)</label>
+            <input type="number" id="antiguedadMensual" min="0" step="0.01" placeholder="Ej: 50.00 (0 si no cobra)">
         </div>
         <div class="input-group highlight-box">
             <label for="mesesAntiguedad">Días/Meses cobrando Antigüedad</label>
-            <input type="number" id="mesesAntiguedad" min="0" max="12" step="0.1" value="" placeholder="Ej: 8 (se asume total si está vacío)">
+            <input type="number" id="mesesAntiguedad" min="0" step="1" placeholder="Ej: 8 meses o 235 días">
         </div>
-
         <div class="input-group highlight-box">
             <label for="nocturnidadFijaMensual">Plus Nocturnidad Fijo Mensual (€/mes)</label>
-            <input type="number" id="nocturnidadFijaMensual" min="0" step="0.01" value="" placeholder="Turno noche fijo (Ej: 150.00)">
+            <input type="number" id="nocturnidadFijaMensual" min="0" step="0.01" placeholder="Ej: 150.00">
         </div>
-        <div class="input-group highlight-box">
-            <label for="mesesNocturnidadFija">Días/Meses cobrando Nocturnidad Fija</label>
-            <input type="number" id="mesesNocturnidadFija" min="0" max="12" step="0.1" value="" placeholder="Ej: 8">
-        </div>
-
         <div class="input-group highlight-box">
             <label for="porcentajeIrpf">Retención IRPF (%)</label>
-            <input type="number" id="porcentajeIrpf" min="0" max="50" step="0.1" value="" placeholder="Ej: 12.5">
-        </div>
-
-        <!-- HORAS VARIABLES Y SUELTAS -->
-        <div class="input-group">
-            <label for="horasNocturnas">Horas Nocturnas Sueltas (Turno Mañana/Tarde)</label>
-            <input type="number" id="horasNocturnas" min="0" step="0.5" value="" placeholder="Ej: 15">
+            <input type="number" id="porcentajeIrpf" min="0" max="50" step="0.1" placeholder="Ej: 12.5">
         </div>
         <div class="input-group">
-            <label for="horasOrdinarias">Total Horas Ordinarias (Extra / Realizadas)</label>
-            <input type="number" id="horasOrdinarias" min="0" step="0.5" value="" placeholder="0">
+            <label for="horasNocturnas">Horas Nocturnas Sueltas</label>
+            <input type="number" id="horasNocturnas" min="0" step="0.5" placeholder="Ej: 0.5">
+        </div>
+        <div class="input-group">
+            <label for="horasOrdinarias">Total Horas Ordinarias Extra</label>
+            <input type="number" id="horasOrdinarias" min="0" step="0.5" placeholder="0">
         </div>
         <div class="input-group">
             <label for="horasComplDiurnas">Total Horas Compl. Diurnas</label>
-            <input type="number" id="horasComplDiurnas" min="0" step="0.5" value="" placeholder="0">
+            <input type="number" id="horasComplDiurnas" min="0" step="0.5" placeholder="0">
         </div>
         <div class="input-group">
             <label for="horasComplNocturnas">Total Horas Compl. Nocturnas</label>
-            <input type="number" id="horasComplNocturnas" min="0" step="0.5" value="" placeholder="0">
+            <input type="number" id="horasComplNocturnas" min="0" step="0.5" placeholder="0">
         </div>
         <div class="input-group">
             <label for="domingostRotativos">Total Domingos Rotativos</label>
-            <input type="number" id="domingostRotativos" min="0" value="" placeholder="0">
+            <input type="number" id="domingostRotativos" min="0" placeholder="0">
         </div>
         <div class="input-group">
             <label for="plusFestivoComple">Total Plus Festivo/Dom. Comple</label>
-            <input type="number" id="plusFestivoComple" min="0" value="" placeholder="0">
+            <input type="number" id="plusFestivoComple" min="0" placeholder="0">
         </div>
         <div class="input-group deduction">
-            <label for="mejoraVoluntaria">Mejora Voluntaria Percibida (€ a descontar)</label>
-            <input type="number" id="mejoraVoluntaria" min="0" step="0.01" value="" placeholder="Ej: 150.00">
+            <label for="mejoraVoluntaria">Mejora Voluntaria (€ a descontar)</label>
+            <input type="number" id="mejoraVoluntaria" min="0" step="0.01" placeholder="Ej: 150.00">
         </div>
     </form>
 
@@ -337,235 +249,139 @@
                     <th>Total Estimado</th>
                 </tr>
             </thead>
-            <tbody id="resultsTable">
-                <!-- Se genera dinámicamente -->
-            </tbody>
+            <tbody id="resultsTable"></tbody>
         </table>
     </div>
 
     <div class="total-box">
-        <div>
-            <span>Bruto Atrasos Generados</span>
-            <strong id="totalBruto">0,00 €</strong>
-        </div>
-        <div>
-            <span>Deducción (Mejora Vol.)</span>
-            <strong id="totalDeduccion" style="color: #ff6b6b;">-0,00 €</strong>
-        </div>
-        <div>
-            <span>Retención IRPF</span>
-            <strong id="totalIrpf" style="color: #ffab40;">-0,00 €</strong>
-        </div>
-        <div>
-            <span>Neto Estimado Atrasos</span>
-            <strong id="totalNeto" class="increment">0,00 €</strong>
-        </div>
+        <div><span>Bruto Atrasos Generados</span><strong id="totalBruto">0,00 €</strong></div>
+        <div><span>Deducción (Mejora Vol.)</span><strong id="totalDeduccion" style="color: #ff6b6b;">-0,00 €</strong></div>
+        <div><span>Retención IRPF</span><strong id="totalIrpf" style="color: #ffab40;">-0,00 €</strong></div>
+        <div><span>Neto Estimado Atrasos</span><strong id="totalNeto" class="increment">0,00 €</strong></div>
     </div>
 </div>
 
 <script>
     const TARIFAS = {
         horasOrdinarias: { nombre: 'Hora Ordinaria', ant: 10.92, nua: 11.36 },
-        horasNocturnas: { nombre: 'Hora Nocturna Suelta (Variable)', ant: 13.15, nua: 11.36 + 2.32 },
+        horasNocturnas: { nombre: 'Hora Nocturna Suelta (Variable)', ant: 13.15, nua: 13.68 },
         horasComplDiurnas: { nombre: 'Hora Compl. Diurna', ant: 10.05, nua: 10.05 },
         horasComplNocturnas: { nombre: 'Hora Compl. Nocturna', ant: 12.28, nua: 12.28 },
         domingostRotativos: { nombre: 'Domingo Rotativo', ant: 85.725, nua: 89.15 },
         plusFestivoComple: { nombre: 'Plus Festivo / Dom. Comple', ant: 174.13, nua: 181.10 }
     };
 
-    const categoriaSelect = document.getElementById('categoria');
-    const grupoMesesEspecialista = document.getElementById('grupoMesesEspecialista');
+    let tramoId = 0;
 
-    categoriaSelect.addEventListener('change', () => {
-        if (categoriaSelect.value === 'cambio_especialista') {
-            grupoMesesEspecialista.style.display = 'flex';
-        } else {
-            grupoMesesEspecialista.style.display = 'none';
-        }
-        calcular();
-    });
-
-    function agregarTramo() {
-        const container = document.getElementById('tramosJornada');
+    function agregarTramo(fechaInicio = '', fechaFin = '', horas = 40, categoria = 'mozo') {
+        tramoId++;
+        const container = document.getElementById('tramosContainer');
         const div = document.createElement('div');
-        div.className = 'tramo-row';
+        div.className = 'tramo-card';
+        div.id = `tramo-${tramoId}`;
         div.innerHTML = `
-            <input type="number" class="horas-tramo" min="1" max="40" step="0.5" placeholder="Horas/Semana (Ej: 20)">
-            <input type="date" class="fecha-inicio" title="Fecha Inicio">
-            <input type="date" class="fecha-fin" title="Fecha Fin">
-            <span class="info-dias">0 días</span>
-            <button type="button" class="btn-action btn-remove" onclick="quitarTramo(this)">✕</button>
+            <div class="tramo-header">
+                <span>Tramo de Turno / Horario #${tramoId}</span>
+                <button type="button" class="btn-remove" onclick="eliminarTramo(${tramoId})">✕ Eliminar</button>
+            </div>
+            <div class="grid-form">
+                <div class="input-group">
+                    <label>Categoría en este tramo</label>
+                    <select class="t-categoria" onchange="calcular()">
+                        <option value="mozo" ${categoria === 'mozo' ? 'selected' : ''}>Mozo</option>
+                        <option value="especialista" ${categoria === 'especialista' ? 'selected' : ''}>Mozo Especialista</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Horas Semanales Contrato</label>
+                    <input type="number" class="t-horas" value="${horas}" min="1" max="40" step="0.5" oninput="calcular()">
+                </div>
+                <div class="input-group">
+                    <label>Fecha Inicio</label>
+                    <input type="date" class="t-inicio" value="${fechaInicio}" onchange="calcular()">
+                </div>
+                <div class="input-group">
+                    <label>Fecha Fin</label>
+                    <input type="date" class="t-fin" value="${fechaFin}" onchange="calcular()">
+                </div>
+            </div>
         `;
         container.appendChild(div);
-        
-        div.querySelectorAll('input').forEach(i => {
-            i.addEventListener('input', calcular);
-            i.addEventListener('change', calcular);
-        });
-
         calcular();
     }
 
-    function quitarTramo(btn) {
-        const rows = document.querySelectorAll('.tramo-row');
-        if (rows.length > 1) {
-            btn.parentElement.remove();
-            calcular();
-        }
+    function eliminarTramo(id) {
+        const tramo = document.getElementById(`tramo-${id}`);
+        if (tramo) tramo.remove();
+        calcular();
     }
 
-    function obtenerTramosJornada() {
-        const tramos = [];
-        document.querySelectorAll('.tramo-row').forEach(row => {
-            const h = parseFloat(row.querySelector('.horas-tramo').value) || 0;
-            const fInicio = row.querySelector('.fecha-inicio').value;
-            const fFin = row.querySelector('.fecha-fin').value;
-            const spanDias = row.querySelector('.info-dias');
-
-            if (h > 0 && fInicio && fFin) {
-                const d1 = new Date(fInicio);
-                const d2 = new Date(fFin);
-                if (d2 >= d1) {
-                    const diffTime = Math.abs(d2 - d1);
-                    const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Incluye el día final
-                    spanDias.textContent = `${dias} días`;
-                    // Convertir días a equivalente mensual preciso (promedio 30.4167 días/mes)
-                    const mesesEquivalentes = dias / 30.4167;
-                    tramos.push({ horasSemanales: h, dias: dias, meses: mesesEquivalentes });
-                } else {
-                    spanDias.textContent = 'Fecha inválida';
-                }
-            } else {
-                spanDias.textContent = '0 días';
-            }
-        });
-        return tramos;
+    function calcularDias(f1, f2) {
+        if (!f1 || !f2) return 0;
+        const d1 = new Date(f1);
+        const d2 = new Date(f2);
+        const diff = d2 - d1;
+        return diff >= 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1 : 0;
     }
 
     function calcular() {
         const tbody = document.getElementById('resultsTable');
         tbody.innerHTML = '';
-
         let brutoAtrasos = 0;
-        const tramosJornada = obtenerTramosJornada();
-
-        const totalDiasCalculados = tramosJornada.reduce((acc, t) => acc + t.dias, 0);
-        const totalMesesCalculados = tramosJornada.reduce((acc, t) => acc + t.meses, 0);
-
-        const antiguedadMensual = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
-        const inputMesesAntiguedad = document.getElementById('mesesAntiguedad').value;
-        let mesesAntiguedad = inputMesesAntiguedad !== "" ? (parseFloat(inputMesesAntiguedad) || 0) : totalMesesCalculados;
-
-        const nocturnidadFijaMensual = parseFloat(document.getElementById('nocturnidadFijaMensual').value) || 0;
-        const inputMesesNocturnidad = document.getElementById('mesesNocturnidadFija').value;
-        let mesesNocturnidadFija = inputMesesNocturnidad !== "" ? (parseFloat(inputMesesNocturnidad) || 0) : totalMesesCalculados;
-
-        const porcentajeIrpf = parseFloat(document.getElementById('porcentajeIrpf').value) || 0;
-        const categoria = categoriaSelect.value;
-        const mesesEspecialista = parseFloat(document.getElementById('mesesComoEspecialista').value) || 0;
 
         const factorProrrateoPagas = 15 / 12; 
         const porcentajePendiente = 0.011;
-
         const diffHoraMozo = 0.40 * (porcentajePendiente / 0.04);
         const diffHoraEspecialista = 0.55 * (porcentajePendiente / 0.04);
 
-        // 1. CÁLCULO DE SALARIO BASE Y PLUS CONVENIO BASADO EN FECHAS
-        let totalBaseAtrasos = 0;
-        let totalConvenioAtrasos = 0;
+        // 1. CÁLCULO DESGLOSADO POR TRAMOS DE TURNOS
+        const tramos = document.querySelectorAll('.tramo-card');
+        tramos.forEach((tramo, index) => {
+            const cat = tramo.querySelector('.t-categoria').value;
+            const horas = parseFloat(tramo.querySelector('.t-horas').value) || 0;
+            const inicio = tramo.querySelector('.t-inicio').value;
+            const fin = tramo.querySelector('.t-fin').value;
+            const dias = calcularDias(inicio, fin);
 
-        if (tramosJornada.length > 0) {
-            let mesesComputados = 0;
+            if (dias > 0 && horas > 0) {
+                const horasMensuales = (horas * 40) / 9;
+                const diffHora = (cat === 'especialista') ? diffHoraEspecialista : diffHoraMozo;
+                
+                // Salario base proporcional a días del tramo
+                const atrasoBaseTramo = (horasMensuales * diffHora * factorProrrateoPagas) * (dias / 30);
+                
+                // Plus Convenio proporcional a días y jornada del tramo
+                const plusConvenioDiario = (80 * horas) / (40 * 30);
+                const atrasoConvenioTramo = plusConvenioDiario * dias;
 
-            tramosJornada.forEach(tramo => {
-                const horasMensualesBase = (tramo.horasSemanales * 40) / 9;
+                brutoAtrasos += atrasoBaseTramo + atrasoConvenioTramo;
 
-                if (categoria === 'cambio_especialista') {
-                    const propEspecialista = Math.min(tramo.meses, Math.max(0, mesesEspecialista - mesesComputados));
-                    const propMozo = tramo.meses - propEspecialista;
-                    
-                    totalBaseAtrasos += (horasMensualesBase * diffHoraMozo * factorProrrateoPagas * propMozo) + 
-                                       (horasMensualesBase * diffHoraEspecialista * factorProrrateoPagas * propEspecialista);
-                    mesesComputados += tramo.meses;
-                } else if (categoria === 'especialista') {
-                    totalBaseAtrasos += horasMensualesBase * diffHoraEspecialista * factorProrrateoPagas * tramo.meses;
-                } else {
-                    totalBaseAtrasos += horasMensualesBase * diffHoraMozo * factorProrrateoPagas * tramo.meses;
-                }
-
-                const plusConvenioNuevoMensual = (80 * tramo.horasSemanales) / 40;
-                totalConvenioAtrasos += plusConvenioNuevoMensual * tramo.meses;
-            });
-
-            if (totalBaseAtrasos > 0) {
-                brutoAtrasos += totalBaseAtrasos;
-                const trBase = document.createElement('tr');
-                trBase.innerHTML = `
-                    <td><strong>Salario Base (Pendiente 1.1%, 15 pagas)</strong></td>
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>Tramo #${index + 1} (${cat === 'especialista' ? 'M. Especialista' : 'Mozo'}, ${horas}h/sem)</strong><br><small>${inicio || 'S/F'} a ${fin || 'S/F'} (${dias} días)</small></td>
                     <td>-</td>
                     <td>-</td>
-                    <td class="diff-positive">Por tramos de fecha</td>
-                    <td><strong>+${totalBaseAtrasos.toFixed(2)} € (${totalDiasCalculados} días / ${totalMesesCalculados.toFixed(2)} m)</strong></td>
+                    <td class="diff-positive">Por tramo</td>
+                    <td><strong>+${(atrasoBaseTramo + atrasoConvenioTramo).toFixed(2)} €</strong></td>
                 `;
-                tbody.appendChild(trBase);
+                tbody.appendChild(tr);
             }
+        });
 
-            if (totalConvenioAtrasos > 0) {
-                brutoAtrasos += totalConvenioAtrasos;
-                const trConvenio = document.createElement('tr');
-                trConvenio.innerHTML = `
-                    <td><strong>Plus Convenio (Prorrateado por días)</strong></td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td class="diff-positive">Por tramos de fecha</td>
-                    <td><strong>+${totalConvenioAtrasos.toFixed(2)} € (${totalDiasCalculados} días)</strong></td>
-                `;
-                tbody.appendChild(trConvenio);
-            }
-        }
-
-        // 2. ANTIGÜEDAD
+        // 2. ANTIGÜEDAD Y RESTO DE CONCEPTOS
+        const antiguedadMensual = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
+        const mesesAntiguedad = parseFloat(document.getElementById('mesesAntiguedad').value) || 0;
         if (mesesAntiguedad > 0 && antiguedadMensual > 0) {
-            const difMensualAntiguedad = (antiguedadMensual * porcentajePendiente) * factorProrrateoPagas;
-            const totalAntiguedadAtrasos = difMensualAntiguedad * mesesAntiguedad;
-            brutoAtrasos += totalAntiguedadAtrasos;
-
-            const trAntiguedad = document.createElement('tr');
-            trAntiguedad.innerHTML = `
-                <td><strong>Plus Antigüedad (Pendiente 1.1%)</strong></td>
-                <td>${antiguedadMensual.toFixed(2)} €/mes</td>
-                <td>${(antiguedadMensual * (1 + 0.04)).toFixed(2)} €/mes</td>
-                <td class="diff-positive">+${difMensualAntiguedad.toFixed(2)} €/mes</td>
-                <td><strong>+${totalAntiguedadAtrasos.toFixed(2)} € (${mesesAntiguedad.toFixed(2)} m)</strong></td>
-            `;
-            tbody.appendChild(trAntiguedad);
+            const totalAnt = (antiguedadMensual * porcentajePendiente * factorProrrateoPagas) * mesesAntiguedad;
+            brutoAtrasos += totalAnt;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>Plus Antigüedad</strong></td><td>${antiguedadMensual} €/m</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalAnt.toFixed(2)} €</strong></td>`;
+            tbody.appendChild(tr);
         }
 
-        // 3. PLUS NOCTURNIDAD FIJO MENSUAL
-        if (mesesNocturnidadFija > 0 && nocturnidadFijaMensual > 0) {
-            const difMensualNocturnidad = (nocturnidadFijaMensual * porcentajePendiente) * factorProrrateoPagas;
-            const totalNocturnidadAtrasos = difMensualNocturnidad * mesesNocturnidadFija;
-            brutoAtrasos += totalNocturnidadAtrasos;
-
-            const trNocturnidad = document.createElement('tr');
-            trNocturnidad.innerHTML = `
-                <td><strong>Plus Nocturnidad Fijo Cuadrante (Pendiente 1.1%)</strong></td>
-                <td>${nocturnidadFijaMensual.toFixed(2)} €/mes</td>
-                <td>${(nocturnidadFijaMensual * (1 + 0.04)).toFixed(2)} €/mes</td>
-                <td class="diff-positive">+${difMensualNocturnidad.toFixed(2)} €/mes</td>
-                <td><strong>+${totalNocturnidadAtrasos.toFixed(2)} € (${mesesNocturnidadFija.toFixed(2)} m)</strong></td>
-            `;
-            tbody.appendChild(trNocturnidad);
-        }
-
-        // 4. RESTO DE CONCEPTOS Y HORAS SUELTAS
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
-            const subtotalAnt = inputVal * data.ant;
-            const subtotalNue = inputVal * data.nua;
-            const difUnitaria = data.nua - data.ant;
-            const difTotal = subtotalNue - subtotalAnt;
-
+            const difTotal = inputVal * (data.nua - data.ant);
             brutoAtrasos += difTotal;
 
             if (inputVal > 0) {
@@ -574,46 +390,18 @@
                     <td><strong>${data.nombre}</strong> (${inputVal} uds)</td>
                     <td>${data.ant.toFixed(3)} €</td>
                     <td>${data.nua.toFixed(2)} €</td>
-                    <td class="diff-positive">+${difUnitaria.toFixed(2)} €</td>
+                    <td class="diff-positive">+${(data.nua - data.ant).toFixed(2)} €</td>
                     <td><strong>+${difTotal.toFixed(2)} €</strong></td>
                 `;
                 tbody.appendChild(tr);
             }
         }
 
-        // 5. MEJORA VOLUNTARIA
+        // 3. MEJORA VOLUNTARIA E IRPF
         const mejoraVoluntaria = parseFloat(document.getElementById('mejoraVoluntaria').value) || 0;
-        if (mejoraVoluntaria > 0) {
-            const trMV = document.createElement('tr');
-            trMV.innerHTML = `
-                <td><strong>Mejora Voluntaria (A compensar)</strong></td>
-                <td>-</td>
-                <td>-</td>
-                <td class="diff-negative">Deducción</td>
-                <td class="diff-negative"><strong>-${mejoraVoluntaria.toFixed(2)} €</strong></td>
-            `;
-            tbody.appendChild(trMV);
-        }
-
-        // 6. IRPF
+        const porcentajeIrpf = parseFloat(document.getElementById('porcentajeIrpf').value) || 0;
         const sujetoAretencion = Math.max(0, brutoAtrasos - mejoraVoluntaria);
         const retencionIrpf = sujetoAretencion * (porcentajeIrpf / 100);
-
-        if (porcentajeIrpf > 0 && sujetoAretencion > 0) {
-            const trIrpf = document.createElement('tr');
-            trIrpf.innerHTML = `
-                <td><strong>Retención IRPF (${porcentajeIrpf}%)</strong></td>
-                <td>-</td>
-                <td>-</td>
-                <td class="diff-negative">Retención</td>
-                <td class="diff-negative"><strong>-${retencionIrpf.toFixed(2)} €</strong></td>
-            `;
-            tbody.appendChild(trIrpf);
-        }
-
-        if (tbody.innerHTML === '') {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">Selecciona fechas y horas para calcular los atrasos</td></tr>`;
-        }
 
         const netoAtrasos = sujetoAretencion - retencionIrpf;
 
@@ -623,17 +411,16 @@
         document.getElementById('totalNeto').textContent = (netoAtrasos >= 0 ? '+' : '') + netoAtrasos.toFixed(2) + ' €';
     }
 
-    document.querySelectorAll('#salaryForm input, #salaryForm select').forEach(input => {
+    // Tramos por defecto de la imagen del usuario
+    window.onload = function() {
+        agregarTramo('2026-03-11', '2026-05-12', 24.5, 'mozo');
+        agregarTramo('2026-03-13', '2026-06-10', 40, 'mozo');
+        agregarTramo('2026-06-11', '2026-08-31', 40, 'especialista');
+    };
+
+    document.querySelectorAll('#salaryForm input').forEach(input => {
         input.addEventListener('input', calcular);
-        input.addEventListener('change', calcular);
     });
-
-    document.querySelectorAll('.tramo-row input').forEach(i => {
-        i.addEventListener('input', calcular);
-        i.addEventListener('change', calcular);
-    });
-
-    calcular();
 </script>
 
 </body>
