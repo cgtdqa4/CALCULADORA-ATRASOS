@@ -201,7 +201,7 @@
             <input type="number" id="mesesAntiguedad" min="0" step="1" value="0">
         </div>
         <div class="input-group highlight-box">
-            <label for="horasPlusLogistica">Plus Logística - Horas Semanales (12 pagas)</label>
+            <label for="horasPlusLogistica">Plus Logística - Horas Semanales (12 pagas, íntegro)</label>
             <input type="number" id="horasPlusLogistica" min="0" max="40" step="0.01" value="0" placeholder="Ej: 37.5">
         </div>
         <div class="input-group highlight-box">
@@ -395,19 +395,19 @@
             tbody.appendChild(tr);
         }
 
-        // 3. PLUS LOGÍSTICA (A 12 PAGAS: SIN FACTOR 15/12)
+        // 3. PLUS LOGÍSTICA (A 12 PAGAS E ÍNTEGRO: SIN FACTOR 15/12 Y SIN 1.1%)
         const horasPlusLogistica = parseFloat(document.getElementById('horasPlusLogistica').value) || 0;
         const mesesPlusLogistica = parseFloat(document.getElementById('mesesPlusLogistica').value) || 0;
         if (horasPlusLogistica > 0 && mesesPlusLogistica > 0) {
             const plusLogisticaMensual = (80 / 40) * horasPlusLogistica; // Importe mensual a 12 pagas
-            const atrasoLogistica = (plusLogisticaMensual * porcentajePendiente) * mesesPlusLogistica;
+            const atrasoLogistica = plusLogisticaMensual * mesesPlusLogistica; // Íntegro 100%
             brutoAtrasos += atrasoLogistica;
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>Plus Logística (${horasPlusLogistica}h/sem - 12 pagas)</strong><br><small>${plusLogisticaMensual.toFixed(2)} €/mes x ${mesesPlusLogistica} mes(es)</small></td>
+                <td><strong>Plus Logística (${horasPlusLogistica}h/sem - Íntegro 12 pagas)</strong><br><small>${plusLogisticaMensual.toFixed(2)} €/mes x ${mesesPlusLogistica} mes(es)</small></td>
+                <td>-</td>
                 <td>${plusLogisticaMensual.toFixed(2)} €/m</td>
-                <td>${(plusLogisticaMensual * 1.011).toFixed(2)} €/m</td>
-                <td class="diff-positive">1.1%</td>
+                <td class="diff-positive">Íntegro (100%)</td>
                 <td><strong>+${atrasoLogistica.toFixed(2)} €</strong></td>
             `;
             tbody.appendChild(tr);
