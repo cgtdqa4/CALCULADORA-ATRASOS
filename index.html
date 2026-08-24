@@ -201,12 +201,8 @@
             <input type="number" id="mesesAntiguedad" min="0" step="1" value="0">
         </div>
         <div class="input-group highlight-box">
-            <label for="transporteMensual">Plus Transporte Bruto (€ actual/mes)</label>
+            <label for="transporteMensual">Plus Transporte Bruto (€ actual/mes) - Total 8 meses</label>
             <input type="number" id="transporteMensual" min="0" step="0.01" value="0">
-        </div>
-        <div class="input-group highlight-box">
-            <label for="mesesTransporte">Días/Meses cobrando Transporte</label>
-            <input type="number" id="mesesTransporte" min="0" step="1" value="0">
         </div>
         <div class="input-group highlight-box">
             <label for="nocturnidadFijaMensual">Plus Nocturnidad Fijo Mensual (€/mes)</label>
@@ -387,14 +383,13 @@
             tbody.appendChild(tr);
         }
 
-        // 3. PLUS TRANSPORTE
+        // 3. PLUS TRANSPORTE (Fijo 8 meses)
         const transporteMensual = parseFloat(document.getElementById('transporteMensual').value) || 0;
-        const mesesTransporte = parseFloat(document.getElementById('mesesTransporte').value) || 0;
-        if (mesesTransporte > 0 && transporteMensual > 0) {
-            const totalTrans = (transporteMensual * porcentajePendiente * factorProrrateoPagas) * mesesTransporte;
+        if (transporteMensual > 0) {
+            const totalTrans = (transporteMensual * porcentajePendiente * factorProrrateoPagas) * 8;
             brutoAtrasos += totalTrans;
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><strong>Plus Transporte</strong></td><td>${transporteMensual.toFixed(2)} €/m</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalTrans.toFixed(2)} €</strong></td>`;
+            tr.innerHTML = `<td><strong>Plus Transporte (8 meses)</strong></td><td>${transporteMensual.toFixed(2)} €/m</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalTrans.toFixed(2)} €</strong></td>`;
             tbody.appendChild(tr);
         }
 
