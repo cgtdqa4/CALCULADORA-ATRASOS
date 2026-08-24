@@ -202,7 +202,7 @@
         </div>
         <div class="input-group highlight-box" id="grupoMesesEspecialista" style="display: none;">
             <label for="mesesComoEspecialista">Meses como Mozo Especialista</label>
-            <input type="number" id="mesesComoEspecialista" min="0" max="12" value="" placeholder="Ej: 10 (Marzo a Diciembre)">
+            <input type="number" id="mesesComoEspecialista" min="0" max="12" value="" placeholder="Ej: 4 (Si cambió a mitad)">
         </div>
         <div class="input-group highlight-box">
             <label for="horasSemanales">Horas Semanales de Contrato (Dec.)</label>
@@ -210,19 +210,23 @@
         </div>
         <div class="input-group highlight-box">
             <label for="mesesAtrasos">Meses de Atrasos a calcular</label>
-            <input type="number" id="mesesAtrasos" min="0" step="1" value="" placeholder="Ej: 12">
+            <input type="number" id="mesesAtrasos" min="0" step="1" value="" placeholder="Ej: 8">
         </div>
         <div class="input-group highlight-box">
             <label for="horasMensualesBase">Total Horas Mensuales (para Salario Base)</label>
             <input type="number" id="horasMensualesBase" min="0" step="0.5" value="" placeholder="Ej: 160">
         </div>
         <div class="input-group highlight-box">
-            <label for="antiguedadMensual">Plus Antigüedad Mensual (€ actual)</label>
-            <input type="number" id="antiguedadMensual" min="0" step="0.01" value="" placeholder="Ej: 50.00">
+            <label for="antiguedadMensual">Plus Antigüedad Bruto (€ actual al mes)</label>
+            <input type="number" id="antiguedadMensual" min="0" step="0.01" value="" placeholder="Ej: 50.00 (Si cobra antigüedad)">
         </div>
         <div class="input-group highlight-box">
             <label for="mesesAntiguedad">Meses cobrando Antigüedad en el periodo</label>
-            <input type="number" id="mesesAntiguedad" min="0" max="12" step="1" value="" placeholder="Ej: 6 (Si empezó a mitad de año)">
+            <input type="number" id="mesesAntiguedad" min="0" max="12" step="1" value="" placeholder="Ej: 8 (0 si no la cobra)">
+        </div>
+        <div class="input-group highlight-box">
+            <label for="porcentajeIrpf">Retención IRPF (%)</label>
+            <input type="number" id="porcentajeIrpf" min="0" max="50" step="0.1" value="" placeholder="Ej: 12.5">
         </div>
         <div class="input-group highlight-box">
             <label for="nocturnidadFijaMensual">Plus Nocturnidad Fijo Mensual (€ actual)</label>
@@ -285,6 +289,10 @@
             <strong id="totalDeduccion" style="color: #ff6b6b;">-0,00 €</strong>
         </div>
         <div>
+            <span>Retención IRPF</span>
+            <strong id="totalIrpf" style="color: #ffab40;">-0,00 €</strong>
+        </div>
+        <div>
             <span>Neto Estimado Atrasos</span>
             <strong id="totalNeto" class="increment">0,00 €</strong>
         </div>
@@ -323,10 +331,16 @@
         const horasMensualesBase = parseFloat(document.getElementById('horasMensualesBase').value) || 0;
         const antiguedadMensual = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
         
-        // Si no se introduce un valor de meses de antigüedad, por defecto toma todos los meses de atrasos
+        // Asignación de meses de antigüedad
         const inputMesesAntiguedad = document.getElementById('mesesAntiguedad').value;
-        const mesesAntiguedad = inputMesesAntiguedad !== "" ? parseInt(inputMesesAntiguedad) || 0 : mesesAtrasos;
-        
+        let mesesAntiguedad = 0;
+        if (inputMesesAntiguedad !== "") {
+            mesesAntiguedad = parseInt(inputMesesAntiguedad) || 0;
+        } else if (antiguedadMensual > 0) {
+            mesesAntiguedad = mesesAtrasos; // Si hay importe pero no meses, asume todos los meses
+        }
+
+        const porcentajeIrpf = parseFloat(document.getElementById('porcentajeIrpf').value) || 0;
         const nocturnidadFijaMensual = parseFloat(document.getElementById('nocturnidadFijaMensual').value) || 0;
         const categoria = categoriaSelect.value;
         const mesesEspecialista = parseInt(document.getElementById('mesesComoEspecialista').value) || 0;
@@ -373,7 +387,7 @@
             tbody.appendChild(trBase);
         }
 
-        // 2. CÁLCULO DE LA ANTIGÜEDAD (por los meses exactos indicados)
+        // 2. CÁLCULO DE LA ANTIGÜEDAD
         if (mesesAntiguedad > 0 && antiguedadMensual > 0) {
             const difMensualAntiguedad = (antiguedadMensual * porcentajePendiente) * factorProrrateoPagas;
             const totalAntiguedadAtrasos = difMensualAntiguedad * mesesAntiguedad;
@@ -465,14 +479,31 @@
             tbody.appendChild(trMV);
         }
 
+        // 7. CÁLCULO DE IRPF
+        const sujetoAretencion = Math.max(0, brutoAtrasos - mejoraVoluntaria);
+        const retencionIrpf = sujetoAretencion * (porcentajeIrpf / 100);
+
+        if (porcentajeIrpf > 0 && sujetoAretencion > 0) {
+            const trIrpf = document.createElement('tr');
+            trIrpf.innerHTML = `
+                <td><strong>Retención IRPF (${porcentajeIrpf}%)</strong></td>
+                <td>-</td>
+                <td>-</td>
+                <td class="diff-negative">Retención</td>
+                <td class="diff-negative"><strong>-${retencionIrpf.toFixed(2)} €</strong></td>
+            `;
+            tbody.appendChild(trIrpf);
+        }
+
         if (tbody.innerHTML === '') {
             tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">Introduce tus datos para calcular los atrasos acumulados</td></tr>`;
         }
 
-        const netoAtrasos = brutoAtrasos - mejoraVoluntaria;
+        const netoAtrasos = sujetoAretencion - retencionIrpf;
 
         document.getElementById('totalBruto').textContent = '+' + brutoAtrasos.toFixed(2) + ' €';
         document.getElementById('totalDeduccion').textContent = '-' + mejoraVoluntaria.toFixed(2) + ' €';
+        document.getElementById('totalIrpf').textContent = '-' + retencionIrpf.toFixed(2) + ' €';
         document.getElementById('totalNeto').textContent = (netoAtrasos >= 0 ? '+' : '') + netoAtrasos.toFixed(2) + ' €';
     }
 
