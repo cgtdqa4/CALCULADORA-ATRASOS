@@ -202,7 +202,11 @@
         </div>
         <div class="input-group highlight-box">
             <label for="transporteAcumulado">Suma Total Plus Transporte (€ Ene-Ago)</label>
-            <input type="number" id="transporteAcumulado" min="0" step="0.01" value="0" placeholder="Ej: 130.88x8">
+            <input type="number" id="transporteAcumulado" min="0" step="0.01" value="0" placeholder="Ej: 1047">
+        </div>
+        <div class="input-group highlight-box">
+            <label for="domingoVacAcumulado">Suma Total Plus Domingo Vac. (€ Ene-Ago)</label>
+            <input type="number" id="domingoVacAcumulado" min="0" step="0.01" value="0" placeholder="Importe bruto cobrado">
         </div>
         <div class="input-group highlight-box">
             <label for="nocturnidadFijaMensual">Plus Nocturnidad Fijo Mensual (€/mes)</label>
@@ -231,10 +235,6 @@
         <div class="input-group">
             <label for="domingostRotativos">Total Domingos Rotativos</label>
             <input type="number" id="domingostRotativos" min="0" value="0">
-        </div>
-        <div class="input-group">
-            <label for="diasDomingoVac">Total Días P. Domingo Vac.</label>
-            <input type="number" id="diasDomingoVac" min="0" step="0.5" value="0">
         </div>
         <div class="input-group">
             <label for="plusFestivoComple">Total Plus Festivo/Dom. Comple</label>
@@ -276,7 +276,6 @@
         horasComplDiurnas: { nombre: 'Hora Compl. Diurna', ant: 10.05, nua: 10.05 },
         horasComplNocturnas: { nombre: 'Hora Compl. Nocturna', ant: 12.28, nua: 12.28 },
         domingostRotativos: { nombre: 'Domingo Rotativo', ant: 85.725, nua: 89.15 },
-        diasDomingoVac: { nombre: 'Días P. Domingo Vac.', ant: 85.725, nua: 89.15 },
         plusFestivoComple: { nombre: 'Plus Festivo / Dom. Comple', ant: 174.13, nua: 181.10 }
     };
 
@@ -398,7 +397,17 @@
             tbody.appendChild(tr);
         }
 
-        // 4. RESTO DE CONCEPTOS
+        // 4. PLUS DOMINGO VACACIONAL (SUMA TOTAL ACUMULADA ENERO-AGOSTO)
+        const domingoVacAcumulado = parseFloat(document.getElementById('domingoVacAcumulado').value) || 0;
+        if (domingoVacAcumulado > 0) {
+            const totalDomVac = domingoVacAcumulado * porcentajePendiente * factorProrrateoPagas;
+            brutoAtrasos += totalDomVac;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>Plus Domingo Vacational (Acumulado Ene-Ago)</strong></td><td>${domingoVacAcumulado.toFixed(2)} € total</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalDomVac.toFixed(2)} €</strong></td>`;
+            tbody.appendChild(tr);
+        }
+
+        // 5. RESTO DE CONCEPTOS
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
             const difTotal = inputVal * (data.nua - data.ant);
@@ -408,7 +417,7 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${data.nombre}</strong> (${inputVal} uds)</td>
-                    <td>${data.ant.toFixed(3)} €</td>
+                    <td>${data.ant.toFixed(2)} €</td>
                     <td>${data.nua.toFixed(2)} €</td>
                     <td class="diff-positive">+${(data.nua - data.ant).toFixed(2)} €</td>
                     <td><strong>+${difTotal.toFixed(2)} €</strong></td>
@@ -417,7 +426,7 @@
             }
         }
 
-        // 5. MEJORA VOLUNTARIA E IRPF
+        // 6. MEJORA VOLUNTARIA E IRPF
         const mejoraVoluntaria = parseFloat(document.getElementById('mejoraVoluntaria').value) || 0;
         const porcentajeIrpf = parseFloat(document.getElementById('porcentajeIrpf').value) || 0;
         const sujetoAretencion = Math.max(0, brutoAtrasos - mejoraVoluntaria);
