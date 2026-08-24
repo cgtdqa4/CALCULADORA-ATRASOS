@@ -201,6 +201,14 @@
             <input type="number" id="mesesAntiguedad" min="0" step="1" value="0">
         </div>
         <div class="input-group highlight-box">
+            <label for="horasPlusLogistica">Plus Logística - Horas Semanales (12 pagas)</label>
+            <input type="number" id="horasPlusLogistica" min="0" max="40" step="0.01" value="0" placeholder="Ej: 37.5">
+        </div>
+        <div class="input-group highlight-box">
+            <label for="mesesPlusLogistica">Meses cobrando Plus Logística (Ene-Ago)</label>
+            <input type="number" id="mesesPlusLogistica" min="0" max="8" step="0.5" value="0" placeholder="Ej: 8">
+        </div>
+        <div class="input-group highlight-box">
             <label for="transporteAcumulado">Suma Total Plus Transporte (€ Ene-Ago)</label>
             <input type="number" id="transporteAcumulado" min="0" step="0.01" value="0" placeholder="Ej: 1047">
         </div>
@@ -302,7 +310,7 @@
                 </div>
                 <div class="input-group">
                     <label>Horas Semanales Contrato</label>
-                    <input type="number" class="t-horas" value="${horas}" min="0" max="40" step="0.5">
+                    <input type="number" class="t-horas" value="${horas}" min="0" max="40" step="0.1">
                 </div>
                 <div class="input-group">
                     <label>Fecha Inicio</label>
@@ -387,7 +395,25 @@
             tbody.appendChild(tr);
         }
 
-        // 3. PLUS TRANSPORTE (SUMA TOTAL ACUMULADA ENERO-AGOSTO)
+        // 3. PLUS LOGÍSTICA (A 12 PAGAS: SIN FACTOR 15/12)
+        const horasPlusLogistica = parseFloat(document.getElementById('horasPlusLogistica').value) || 0;
+        const mesesPlusLogistica = parseFloat(document.getElementById('mesesPlusLogistica').value) || 0;
+        if (horasPlusLogistica > 0 && mesesPlusLogistica > 0) {
+            const plusLogisticaMensual = (80 / 40) * horasPlusLogistica; // Importe mensual a 12 pagas
+            const atrasoLogistica = (plusLogisticaMensual * porcentajePendiente) * mesesPlusLogistica;
+            brutoAtrasos += atrasoLogistica;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>Plus Logística (${horasPlusLogistica}h/sem - 12 pagas)</strong><br><small>${plusLogisticaMensual.toFixed(2)} €/mes x ${mesesPlusLogistica} mes(es)</small></td>
+                <td>${plusLogisticaMensual.toFixed(2)} €/m</td>
+                <td>${(plusLogisticaMensual * 1.011).toFixed(2)} €/m</td>
+                <td class="diff-positive">1.1%</td>
+                <td><strong>+${atrasoLogistica.toFixed(2)} €</strong></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        // 4. PLUS TRANSPORTE (SUMA TOTAL ACUMULADA ENERO-AGOSTO)
         const transporteAcumulado = parseFloat(document.getElementById('transporteAcumulado').value) || 0;
         if (transporteAcumulado > 0) {
             const totalTrans = transporteAcumulado * porcentajePendiente * factorProrrateoPagas;
@@ -397,7 +423,7 @@
             tbody.appendChild(tr);
         }
 
-        // 4. PLUS DOMINGO VACACIONAL (SUMA TOTAL ACUMULADA ENERO-AGOSTO)
+        // 5. PLUS DOMINGO VACACIONAL (SUMA TOTAL ACUMULADA ENERO-AGOSTO)
         const domingoVacAcumulado = parseFloat(document.getElementById('domingoVacAcumulado').value) || 0;
         if (domingoVacAcumulado > 0) {
             const totalDomVac = domingoVacAcumulado * porcentajePendiente * factorProrrateoPagas;
@@ -407,7 +433,7 @@
             tbody.appendChild(tr);
         }
 
-        // 5. RESTO DE CONCEPTOS
+        // 6. RESTO DE CONCEPTOS
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
             const difTotal = inputVal * (data.nua - data.ant);
@@ -426,7 +452,7 @@
             }
         }
 
-        // 6. MEJORA VOLUNTARIA E IRPF
+        // 7. MEJORA VOLUNTARIA E IRPF
         const mejoraVoluntaria = parseFloat(document.getElementById('mejoraVoluntaria').value) || 0;
         const porcentajeIrpf = parseFloat(document.getElementById('porcentajeIrpf').value) || 0;
         const sujetoAretencion = Math.max(0, brutoAtrasos - mejoraVoluntaria);
