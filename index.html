@@ -201,6 +201,14 @@
             <input type="number" id="mesesAntiguedad" min="0" step="1" value="0">
         </div>
         <div class="input-group highlight-box">
+            <label for="transporteMensual">Plus Transporte Bruto (€ actual/mes)</label>
+            <input type="number" id="transporteMensual" min="0" step="0.01" value="0">
+        </div>
+        <div class="input-group highlight-box">
+            <label for="mesesTransporte">Días/Meses cobrando Transporte</label>
+            <input type="number" id="mesesTransporte" min="0" step="1" value="0">
+        </div>
+        <div class="input-group highlight-box">
             <label for="nocturnidadFijaMensual">Plus Nocturnidad Fijo Mensual (€/mes)</label>
             <input type="number" id="nocturnidadFijaMensual" min="0" step="0.01" value="0">
         </div>
@@ -368,17 +376,29 @@
             }
         });
 
-        // 2. ANTIGÜEDAD Y RESTO DE CONCEPTOS
+        // 2. ANTIGÜEDAD
         const antiguedadMensual = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
         const mesesAntiguedad = parseFloat(document.getElementById('mesesAntiguedad').value) || 0;
         if (mesesAntiguedad > 0 && antiguedadMensual > 0) {
             const totalAnt = (antiguedadMensual * porcentajePendiente * factorProrrateoPagas) * mesesAntiguedad;
             brutoAtrasos += totalAnt;
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><strong>Plus Antigüedad</strong></td><td>${antiguedadMensual} €/m</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalAnt.toFixed(2)} €</strong></td>`;
+            tr.innerHTML = `<td><strong>Plus Antigüedad</strong></td><td>${antiguedadMensual.toFixed(2)} €/m</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalAnt.toFixed(2)} €</strong></td>`;
             tbody.appendChild(tr);
         }
 
+        // 3. PLUS TRANSPORTE
+        const transporteMensual = parseFloat(document.getElementById('transporteMensual').value) || 0;
+        const mesesTransporte = parseFloat(document.getElementById('mesesTransporte').value) || 0;
+        if (mesesTransporte > 0 && transporteMensual > 0) {
+            const totalTrans = (transporteMensual * porcentajePendiente * factorProrrateoPagas) * mesesTransporte;
+            brutoAtrasos += totalTrans;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>Plus Transporte</strong></td><td>${transporteMensual.toFixed(2)} €/m</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalTrans.toFixed(2)} €</strong></td>`;
+            tbody.appendChild(tr);
+        }
+
+        // 4. RESTO DE CONCEPTOS
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
             const difTotal = inputVal * (data.nua - data.ant);
@@ -397,7 +417,7 @@
             }
         }
 
-        // 3. MEJORA VOLUNTARIA E IRPF
+        // 5. MEJORA VOLUNTARIA E IRPF
         const mejoraVoluntaria = parseFloat(document.getElementById('mejoraVoluntaria').value) || 0;
         const porcentajeIrpf = parseFloat(document.getElementById('porcentajeIrpf').value) || 0;
         const sujetoAretencion = Math.max(0, brutoAtrasos - mejoraVoluntaria);
