@@ -161,7 +161,6 @@
         }
 
         .diff-positive { color: #2e7d32; font-weight: bold; }
-        .diff-negative { color: #c8102e; font-weight: bold; }
 
         .total-box {
             background-color: var(--dark-color);
@@ -184,7 +183,7 @@
 
 <div class="container">
     <h1>Calculadora de Atrasos y Subida Salarial</h1>
-    <p class="subtitle">Desglose exacto de tramos horarios y turnos. Cálculo de la subida del 4% descontando el 2,9% ya abonado por la empresa (pendiente real: 1,1%).</p>
+    <p class="subtitle">Cálculo de la subida del 4% descontando el 2,9% ya abonado por la empresa (pendiente real: 1,1%).</p>
 
     <!-- TRAMOS FECHAS Y HORAS -->
     <div id="tramosContainer"></div>
@@ -201,7 +200,7 @@
             <input type="number" id="mesesAntiguedad" min="0" step="1" value="0" placeholder="Ej: 8">
         </div>
         <div class="input-group highlight-box">
-            <label for="horasPlusLogistica">Plus Logística - Horas Semanales (12 pagas, íntegro)</label>
+            <label for="horasPlusLogistica">Plus Logística - Horas Semanales (12 pagas)</label>
             <input type="number" id="horasPlusLogistica" min="0" max="40" step="0.01" value="0" placeholder="Ej: 37.5">
         </div>
         <div class="input-group highlight-box">
@@ -332,12 +331,25 @@
         calcular();
     }
 
-    function calcularDias(f1, f2) {
+    // Calcula meses exactos si el rango cubre meses naturales completos
+    function calcularMesesExactos(f1, f2) {
         if (!f1 || !f2) return 0;
-        const d1 = new Date(f1);
-        const d2 = new Date(f2);
-        const diff = d2 - d1;
-        return diff >= 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1 : 0;
+        const inicio = new Date(f1);
+        const fin = new Date(f2);
+        if (fin < inicio) return 0;
+
+        let meses = (fin.getFullYear() - inicio.getFullYear()) * 12 + (fin.getMonth() - inicio.getMonth());
+        
+        const esPrimerDia = inicio.getDate() === 1;
+        const ultimoDiaMesFin = new Date(fin.getFullYear(), fin.getMonth() + 1, 0).getDate();
+        const esUltimoDia = fin.getDate() === ultimoDiaMesFin;
+
+        if (esPrimerDia && esUltimoDia) {
+            return meses + 1;
+        } else {
+            const diffDias = Math.ceil((fin - inicio) / (1000 * 60 * 60 * 24)) + 1;
+            return diffDias / 30;
+        }
     }
 
     function calcular() {
@@ -345,40 +357,44 @@
         tbody.innerHTML = '';
         let brutoAtrasos = 0;
 
-        const factorProrrateoPagas = 15 / 12; 
-        const porcentajePendiente = 0.011;
+        const factorProrrateoPagas = 15 / 12; // Coeficiente 15 pagas
+        const porcentajePendiente = 0.011;  // 1.1% pendiente real
+        
+        // Diferencia por hora del 1.1% pendiente
         const diffHoraMozo = 0.40 * (porcentajePendiente / 0.04);
         const diffHoraEspecialista = 0.55 * (porcentajePendiente / 0.04);
 
-        // 1. CÁLCULO DESGLOSADO POR TRAMOS DE TURNOS
+        // 1. CÁLCULO POR TRAMOS (Atraso exacto del 1,1%)
         const tramos = document.querySelectorAll('.tramo-card');
         tramos.forEach((tramo, index) => {
             const cat = tramo.querySelector('.t-categoria').value;
             const horas = parseFloat(tramo.querySelector('.t-horas').value) || 0;
             const inicio = tramo.querySelector('.t-inicio').value;
             const fin = tramo.querySelector('.t-fin').value;
-            const dias = calcularDias(inicio, fin);
+            const mesesEquivalentes = calcularMesesExactos(inicio, fin);
 
-            if (dias > 0 && horas > 0) {
-                const horasMensuales = (horas * 40) / 9;
+            if (mesesEquivalentes > 0 && horas > 0) {
+                // 162.5 horas/mes base convenio a 40h/sem
+                const horasMensuales = (162.5 * horas) / 40;
                 const diffHora = (cat === 'especialista') ? diffHoraEspecialista : diffHoraMozo;
                 
-                // Salario base proporcional a días del tramo
-                const atrasoBaseTramo = (horasMensuales * diffHora * factorProrrateoPagas) * (dias / 30);
+                // Salario base por mes real (1.1% pendiente)
+                const atrasoBaseTramo = (horasMensuales * diffHora * factorProrrateoPagas) * mesesEquivalentes;
                 
-                // Plus Convenio proporcional a días y jornada del tramo
-                const plusConvenioDiario = (80 * horas) / (40 * 30);
-                const atrasoConvenioTramo = plusConvenioDiario * dias;
+                // Plus Convenio por mes real (1.1% pendiente)
+                const plusConvenioMensual = ((80 * horas) / 40) * (porcentajePendiente / 0.04);
+                const atrasoConvenioTramo = plusConvenioMensual * mesesEquivalentes;
 
-                brutoAtrasos += atrasoBaseTramo + atrasoConvenioTramo;
+                const totalTramo = atrasoBaseTramo + atrasoConvenioTramo;
+                brutoAtrasos += totalTramo;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>Tramo #${index + 1} (${cat === 'especialista' ? 'M. Especialista' : 'Mozo'}, ${horas}h/sem)</strong><br><small>${inicio || 'S/F'} a ${fin || 'S/F'} (${dias} días)</small></td>
+                    <td><strong>Tramo #${index + 1} (${cat === 'especialista' ? 'M. Especialista' : 'Mozo'}, ${horas}h/sem)</strong><br><small>${inicio || 'S/F'} a ${fin || 'S/F'} (${mesesEquivalentes.toFixed(2)} meses)</small></td>
                     <td>-</td>
                     <td>-</td>
-                    <td class="diff-positive">Por tramo</td>
-                    <td><strong>+${(atrasoBaseTramo + atrasoConvenioTramo).toFixed(2)} €</strong></td>
+                    <td class="diff-positive">1.1% pendiente</td>
+                    <td><strong>+${totalTramo.toFixed(2)} €</strong></td>
                 `;
                 tbody.appendChild(tr);
             }
@@ -395,16 +411,16 @@
             tbody.appendChild(tr);
         }
 
-        // 3. PLUS LOGÍSTICA (A 12 PAGAS E ÍNTEGRO)
+        // 3. PLUS LOGÍSTICA
         const horasPlusLogistica = parseFloat(document.getElementById('horasPlusLogistica').value) || 0;
         const mesesPlusLogistica = parseFloat(document.getElementById('mesesPlusLogistica').value) || 0;
         if (horasPlusLogistica > 0 && mesesPlusLogistica > 0) {
-            const plusLogisticaMensual = (80 / 40) * horasPlusLogistica; // Importe mensual a 12 pagas
-            const atrasoLogistica = plusLogisticaMensual * mesesPlusLogistica; // Íntegro 100%
+            const plusLogisticaMensual = (80 / 40) * horasPlusLogistica;
+            const atrasoLogistica = plusLogisticaMensual * mesesPlusLogistica;
             brutoAtrasos += atrasoLogistica;
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>Plus Logística (${horasPlusLogistica}h/sem - Íntegro 12 pagas)</strong><br><small>${plusLogisticaMensual.toFixed(2)} €/mes x ${mesesPlusLogistica} mes(es)</small></td>
+                <td><strong>Plus Logística (${horasPlusLogistica}h/sem)</strong><br><small>${plusLogisticaMensual.toFixed(2)} €/mes x ${mesesPlusLogistica} mes(es)</small></td>
                 <td>-</td>
                 <td>${plusLogisticaMensual.toFixed(2)} €/m</td>
                 <td class="diff-positive">Íntegro (100%)</td>
@@ -413,7 +429,7 @@
             tbody.appendChild(tr);
         }
 
-        // 4. PLUS TRANSPORTE (SUMA TOTAL ACUMULADA)
+        // 4. PLUS TRANSPORTE
         const transporteAcumulado = parseFloat(document.getElementById('transporteAcumulado').value) || 0;
         if (transporteAcumulado > 0) {
             const totalTrans = transporteAcumulado * porcentajePendiente * factorProrrateoPagas;
@@ -423,7 +439,7 @@
             tbody.appendChild(tr);
         }
 
-        // 5. PLUS DOMINGO VACACIONAL (SUMA TOTAL ACUMULADA)
+        // 5. PLUS DOMINGO VACACIONAL
         const domingoVacAcumulado = parseFloat(document.getElementById('domingoVacAcumulado').value) || 0;
         if (domingoVacAcumulado > 0) {
             const totalDomVac = domingoVacAcumulado * porcentajePendiente * factorProrrateoPagas;
@@ -433,7 +449,7 @@
             tbody.appendChild(tr);
         }
 
-        // 6. RESTO DE CONCEPTOS
+        // 6. RESTO DE CONCEPTOS VARIABLES
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
             const difTotal = inputVal * (data.nua - data.ant);
@@ -470,11 +486,9 @@
         document.getElementById('totalNeto').textContent = (netoAtrasos >= 0 ? '+' : '') + netoAtrasos.toFixed(2) + ' €';
     }
 
-    // Eventos dinámicos globales para que recalcule en tiempo real ante cualquier cambio
     document.addEventListener('input', calcular);
     document.addEventListener('change', calcular);
 
-    // Cargar un tramo limpio a cero al iniciar
     window.onload = function() {
         agregarTramo('', '', 0, 'mozo');
     };
