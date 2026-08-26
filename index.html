@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Atrasos y Subida Salarial - CGT</title>
+    <title>Calculadora de Atrasos y Subida Salarial - CGT SVQ1</title>
     <style>
         :root {
             --primary-color: #c8102e;
@@ -59,39 +59,7 @@
             border-left: 4px solid var(--primary-color);
             border-radius: 8px;
             padding: 15px;
-            margin-bottom: 15px;
-            position: relative;
-        }
-
-        .tramo-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: var(--dark-color);
-        }
-
-        .btn-remove {
-            background: #c8102e;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 4px 8px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        .btn-add {
-            background: #2e7d32;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-weight: bold;
             margin-bottom: 20px;
-            display: inline-block;
         }
 
         .grid-form {
@@ -182,70 +150,88 @@
 <body>
 
 <div class="container">
-    <h1>Calculadora de Atrasos y Subida Salarial</h1>
-    <p class="subtitle">Cálculo de la subida del 4% descontando el 2,9% ya abonado por la empresa (pendiente real: 1,1%).</p>
+    <h1>Calculadora de Atrasos y Subida Salarial (CGT SVQ1)</h1>
+    <p class="subtitle">Tabla Salarial 2026 (Salario Bruto Anual 40h: 19.885,45 €)</p>
 
-    <!-- TRAMOS FECHAS Y HORAS -->
-    <div id="tramosContainer"></div>
-    <button type="button" class="btn-add" onclick="agregarTramo()">+ Añadir otro tramo de turno</button>
+    <!-- UNICO TRAMO DE JORNADA -->
+    <div class="tramo-card">
+        <h3 style="margin-bottom: 12px; font-size: 1rem; color: #333;">Datos del Turno / Jornada a Calcular</h3>
+        <div class="grid-form">
+            <div class="input-group">
+                <label for="categoria">Categoría profesional</label>
+                <select id="categoria">
+                    <option value="mozo">Mozo</option>
+                    <option value="especialista">Mozo Especialista</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="horasSemanales">Horas Semanales Contrato</label>
+                <input type="number" id="horasSemanales" value="0" min="0" max="40" step="0.1" placeholder="Ej: 40">
+            </div>
+            <div class="input-group">
+                <label for="fechaInicio">Fecha Inicio</label>
+                <input type="date" id="fechaInicio">
+            </div>
+            <div class="input-group">
+                <label for="fechaFin">Fecha Fin</label>
+                <input type="date" id="fechaFin">
+            </div>
+        </div>
+    </div>
 
     <!-- CONCEPTOS ADICIONALES -->
     <form id="salaryForm" class="grid-form" style="margin-bottom: 20px;">
         <div class="input-group highlight-box">
-            <label for="antiguedadMensual">Plus Antigüedad Bruto (€ actual/mes)</label>
-            <input type="number" id="antiguedadMensual" min="0" step="0.01" value="0">
+            <label for="antiguedadMensual">Plus Antigüedad (€ actual 2023 por quinquenio)</label>
+            <select id="antiguedadMensual">
+                <option value="0">0 quinquenios (0.00 €)</option>
+                <option value="37.52">5 años / 1 quinq. (37.52 € -> 41.40 €)</option>
+                <option value="74.10">10 años / 2 quinq. (74.10 € -> 81.76 €)</option>
+                <option value="141.66">15 años / 3 quinq. (141.66 € -> 156.29 €)</option>
+                <option value="283.22">20 años / 4 quinq. (283.22 € -> 312.60 €)</option>
+                <option value="354.12">25 años / 5 quinq. (354.12 € -> 390.72 €)</option>
+                <option value="437.86">30 años / 6 quinq. (437.86 € -> 483.10 €)</option>
+            </select>
         </div>
         <div class="input-group highlight-box">
-            <label for="mesesAntiguedad">Meses cobrando Antigüedad</label>
-            <input type="number" id="mesesAntiguedad" min="0" step="1" value="0" placeholder="Ej: 8">
+            <label for="mesesAntiguedad">Meses cobrando Antigüedad en 2026</label>
+            <input type="number" id="mesesAntiguedad" min="0" max="12" step="1" value="0" placeholder="Ej: 8">
         </div>
         <div class="input-group highlight-box">
-            <label for="horasPlusLogistica">Plus Logística - Horas Semanales (12 pagas)</label>
-            <input type="number" id="horasPlusLogistica" min="0" max="40" step="0.01" value="0" placeholder="Ej: 37.5">
+            <label for="horasPlusLogistica">Plus Logística - Jornada Semanal (NUEVO: 80€/40h)</label>
+            <input type="number" id="horasPlusLogistica" min="0" max="40" step="0.01" value="0" placeholder="Ej: 40 (proporcional)">
         </div>
         <div class="input-group highlight-box">
             <label for="mesesPlusLogistica">Meses cobrando Plus Logística</label>
             <input type="number" id="mesesPlusLogistica" min="0" max="12" step="0.5" value="0" placeholder="Ej: 8">
         </div>
         <div class="input-group highlight-box">
-            <label for="transporteAcumulado">Suma Total Plus Transporte (€)</label>
-            <input type="number" id="transporteAcumulado" min="0" step="0.01" value="0" placeholder="Ej: 1047">
+            <label for="mesesTransporte">Meses cobrando Plus Transporte</label>
+            <input type="number" id="mesesTransporte" min="0" max="12" step="0.5" value="0" placeholder="Atraso: +5.24 €/mes">
         </div>
         <div class="input-group highlight-box">
-            <label for="domingoVacAcumulado">Suma Total Plus Domingo Vac. (€)</label>
-            <input type="number" id="domingoVacAcumulado" min="0" step="0.01" value="0" placeholder="Importe bruto cobrado">
+            <label for="domingostRotativos">Total Plus Domingos Trab. (uds)</label>
+            <input type="number" id="domingostRotativos" min="0" value="0" placeholder="Atraso: +3.43 €/domingo">
         </div>
         <div class="input-group highlight-box">
-            <label for="nocturnidadFijaMensual">Plus Nocturnidad Fijo Mensual (€/mes)</label>
-            <input type="number" id="nocturnidadFijaMensual" min="0" step="0.01" value="0">
+            <label for="plusFestivoComple">Total Plus Festivos Trab. (uds)</label>
+            <input type="number" id="plusFestivoComple" min="0" value="0" placeholder="Atraso: +6.97 €/festivo">
+        </div>
+        <div class="input-group highlight-box">
+            <label for="horasComplDiurnas">Total Horas Complementarias</label>
+            <input type="number" id="horasComplDiurnas" min="0" step="0.5" value="0" placeholder="Atraso: +0.40 €/hora">
+        </div>
+        <div class="input-group highlight-box">
+            <label for="horasOrdinarias">Total Horas Extraordinarias</label>
+            <input type="number" id="horasOrdinarias" min="0" step="0.5" value="0" placeholder="Atraso: +0.51 €/hora">
+        </div>
+        <div class="input-group highlight-box">
+            <label for="horasNocturnas">Total Horas Plus Nocturnidad</label>
+            <input type="number" id="horasNocturnas" min="0" step="0.5" value="0" placeholder="Atraso: +0.08 €/hora">
         </div>
         <div class="input-group highlight-box">
             <label for="porcentajeIrpf">Retención IRPF (%)</label>
             <input type="number" id="porcentajeIrpf" min="0" max="50" step="0.1" value="0">
-        </div>
-        <div class="input-group">
-            <label for="horasNocturnas">Horas Nocturnas Sueltas</label>
-            <input type="number" id="horasNocturnas" min="0" step="0.5" value="0">
-        </div>
-        <div class="input-group">
-            <label for="horasOrdinarias">Total Horas Ordinarias Extra</label>
-            <input type="number" id="horasOrdinarias" min="0" step="0.5" value="0">
-        </div>
-        <div class="input-group">
-            <label for="horasComplDiurnas">Total Horas Compl. Diurnas</label>
-            <input type="number" id="horasComplDiurnas" min="0" step="0.5" value="0">
-        </div>
-        <div class="input-group">
-            <label for="horasComplNocturnas">Total Horas Compl. Nocturnas</label>
-            <input type="number" id="horasComplNocturnas" min="0" step="0.5" value="0">
-        </div>
-        <div class="input-group">
-            <label for="domingostRotativos">Total Domingos Rotativos</label>
-            <input type="number" id="domingostRotativos" min="0" value="0">
-        </div>
-        <div class="input-group">
-            <label for="plusFestivoComple">Total Plus Festivo/Dom. Comple</label>
-            <input type="number" id="plusFestivoComple" min="0" value="0">
         </div>
         <div class="input-group deduction">
             <label for="mejoraVoluntaria">Mejora Voluntaria (€ a descontar)</label>
@@ -258,9 +244,9 @@
             <thead>
                 <tr>
                     <th>Concepto</th>
-                    <th>Valor Anterior</th>
-                    <th>Valor Nuevo</th>
-                    <th>Diferencia / Ud.</th>
+                    <th>Antes</th>
+                    <th>Subida (Atraso)</th>
+                    <th>Ahora (2026)</th>
                     <th>Total Estimado</th>
                 </tr>
             </thead>
@@ -277,61 +263,16 @@
 </div>
 
 <script>
+    // TARIFAS ACTUALIZADAS SEGÚN TABLA SALARIAL CGT SVQ1 2026
     const TARIFAS = {
-        horasOrdinarias: { nombre: 'Hora Ordinaria', ant: 10.92, nua: 11.36 },
-        horasNocturnas: { nombre: 'Hora Nocturna Suelta (Variable)', ant: 13.15, nua: 13.68 },
-        horasComplDiurnas: { nombre: 'Hora Compl. Diurna', ant: 10.05, nua: 10.05 },
-        horasComplNocturnas: { nombre: 'Hora Compl. Nocturna', ant: 12.28, nua: 12.28 },
-        domingostRotativos: { nombre: 'Domingo Rotativo', ant: 85.725, nua: 89.15 },
-        plusFestivoComple: { nombre: 'Plus Festivo / Dom. Comple', ant: 174.13, nua: 181.10 }
+        mesesTransporte: { nombre: 'Plus Transporte (Mes)', ant: 130.88, subida: 5.24, nua: 136.12, tipo: 'mes' },
+        domingostRotativos: { nombre: 'Plus Domingos', ant: 85.72, subida: 3.43, nua: 89.15, tipo: 'ud' },
+        plusFestivoComple: { nombre: 'Plus Festivos', ant: 174.13, subida: 6.97, nua: 181.10, tipo: 'ud' },
+        horasComplDiurnas: { nombre: 'Hora Complementaria', ant: 10.05, subida: 0.40, nua: 10.45, tipo: 'h' },
+        horasOrdinarias: { nombre: 'Hora Extra', ant: 12.77, subida: 0.51, nua: 13.28, tipo: 'h' },
+        horasNocturnas: { nombre: 'Plus Nocturnidad (Hora)', ant: 2.23, subida: 0.08, nua: 2.32, tipo: 'h' }
     };
 
-    let tramoId = 0;
-
-    function agregarTramo(fechaInicio = '', fechaFin = '', horas = 0, categoria = 'mozo') {
-        tramoId++;
-        const container = document.getElementById('tramosContainer');
-        const div = document.createElement('div');
-        div.className = 'tramo-card';
-        div.id = `tramo-${tramoId}`;
-        div.innerHTML = `
-            <div class="tramo-header">
-                <span>Tramo de Turno / Horario #${tramoId}</span>
-                <button type="button" class="btn-remove" onclick="eliminarTramo(${tramoId})">✕ Eliminar</button>
-            </div>
-            <div class="grid-form">
-                <div class="input-group">
-                    <label>Categoría en este tramo</label>
-                    <select class="t-categoria">
-                        <option value="mozo" ${categoria === 'mozo' ? 'selected' : ''}>Mozo</option>
-                        <option value="especialista" ${categoria === 'especialista' ? 'selected' : ''}>Mozo Especialista</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Horas Semanales Contrato</label>
-                    <input type="number" class="t-horas" value="${horas}" min="0" max="40" step="0.1">
-                </div>
-                <div class="input-group">
-                    <label>Fecha Inicio</label>
-                    <input type="date" class="t-inicio" value="${fechaInicio}">
-                </div>
-                <div class="input-group">
-                    <label>Fecha Fin</label>
-                    <input type="date" class="t-fin" value="${fechaFin}">
-                </div>
-            </div>
-        `;
-        container.appendChild(div);
-        calcular();
-    }
-
-    function eliminarTramo(id) {
-        const tramo = document.getElementById(`tramo-${id}`);
-        if (tramo) tramo.remove();
-        calcular();
-    }
-
-    // Calcula meses exactos si el rango cubre meses naturales completos
     function calcularMesesExactos(f1, f2) {
         if (!f1 || !f2) return 0;
         const inicio = new Date(f1);
@@ -357,57 +298,54 @@
         tbody.innerHTML = '';
         let brutoAtrasos = 0;
 
-        const factorProrrateoPagas = 15 / 12; // Coeficiente 15 pagas
-        const porcentajePendiente = 0.011;  // 1.1% pendiente real
+        const factorProrrateoPagas = 15 / 12; // 1.25 (Salario Base + 3 Pagas Extras)
+        const porcentajePendiente = 0.011; // 1.1% pendiente real
         
-        // Diferencia por hora del 1.1% pendiente
         const diffHoraMozo = 0.40 * (porcentajePendiente / 0.04);
         const diffHoraEspecialista = 0.55 * (porcentajePendiente / 0.04);
 
-        // 1. CÁLCULO POR TRAMOS (Atraso exacto del 1,1%)
-        const tramos = document.querySelectorAll('.tramo-card');
-        tramos.forEach((tramo, index) => {
-            const cat = tramo.querySelector('.t-categoria').value;
-            const horas = parseFloat(tramo.querySelector('.t-horas').value) || 0;
-            const inicio = tramo.querySelector('.t-inicio').value;
-            const fin = tramo.querySelector('.t-fin').value;
-            const mesesEquivalentes = calcularMesesExactos(inicio, fin);
+        // 1. CÁLCULO SALARIO BASE DEL ÚNICO TRAMO
+        const cat = document.getElementById('categoria').value;
+        const horas = parseFloat(document.getElementById('horasSemanales').value) || 0;
+        const inicio = document.getElementById('fechaInicio').value;
+        const fin = document.getElementById('fechaFin').value;
+        const mesesEquivalentes = calcularMesesExactos(inicio, fin);
 
-            if (mesesEquivalentes > 0 && horas > 0) {
-                // 162.5 horas/mes base convenio a 40h/sem
-                const horasMensuales = (162.5 * horas) / 40;
-                const diffHora = (cat === 'especialista') ? diffHoraEspecialista : diffHoraMozo;
-                
-                // Salario base por mes real (1.1% pendiente)
-                const atrasoBaseTramo = (horasMensuales * diffHora * factorProrrateoPagas) * mesesEquivalentes;
-                
-                // Plus Convenio por mes real (1.1% pendiente)
-                const plusConvenioMensual = ((80 * horas) / 40) * (porcentajePendiente / 0.04);
-                const atrasoConvenioTramo = plusConvenioMensual * mesesEquivalentes;
+        if (mesesEquivalentes > 0 && horas > 0) {
+            const horasMensuales = (162.5 * horas) / 40;
+            const diffHora = (cat === 'especialista') ? diffHoraEspecialista : diffHoraMozo;
+            
+            const atrasoBaseTramo = (horasMensuales * diffHora * factorProrrateoPagas) * mesesEquivalentes;
+            brutoAtrasos += atrasoBaseTramo;
 
-                const totalTramo = atrasoBaseTramo + atrasoConvenioTramo;
-                brutoAtrasos += totalTramo;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>Tramo #${index + 1} (${cat === 'especialista' ? 'M. Especialista' : 'Mozo'}, ${horas}h/sem)</strong><br><small>${inicio || 'S/F'} a ${fin || 'S/F'} (${mesesEquivalentes.toFixed(2)} meses)</small></td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td class="diff-positive">1.1% pendiente</td>
-                    <td><strong>+${totalTramo.toFixed(2)} €</strong></td>
-                `;
-                tbody.appendChild(tr);
-            }
-        });
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>Salario Base (${cat === 'especialista' ? 'M. Especialista' : 'Mozo'}, ${horas}h/sem)</strong><br><small>${inicio || 'S/F'} a ${fin || 'S/F'} (${mesesEquivalentes.toFixed(2)} meses)</small></td>
+                <td>-</td>
+                <td class="diff-positive">1.1% S.Base + Pagas</td>
+                <td>-</td>
+                <td><strong>+${atrasoBaseTramo.toFixed(2)} €</strong></td>
+            `;
+            tbody.appendChild(tr);
+        }
 
         // 2. ANTIGÜEDAD
-        const antiguedadMensual = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
-        const mesesAntiguedad = parseInt(document.getElementById('mesesAntiguedad').value, 10) || 0;
-        if (mesesAntiguedad > 0 && antiguedadMensual > 0) {
-            const totalAnt = (antiguedadMensual * porcentajePendiente * factorProrrateoPagas) * mesesAntiguedad;
+        const antiguedadBase = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
+        const mesesAntiguedad = parseFloat(document.getElementById('mesesAntiguedad').value) || 0;
+        if (mesesAntiguedad > 0 && antiguedadBase > 0) {
+            const numQuinquenios = antiguedadBase / 37.52; 
+            const subidaAntiguedadMes = numQuinquenios * 1.60;
+            const totalAnt = subidaAntiguedadMes * mesesAntiguedad;
             brutoAtrasos += totalAnt;
+            
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><strong>Plus Antigüedad</strong><br><small>${mesesAntiguedad} mes(es)</small></td><td>${antiguedadMensual.toFixed(2)} €/m</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalAnt.toFixed(2)} €</strong></td>`;
+            tr.innerHTML = `
+                <td><strong>Plus Antigüedad (${numQuinquenios.toFixed(0)} quinquenio/s)</strong><br><small>${mesesAntiguedad} mes(es)</small></td>
+                <td>${antiguedadBase.toFixed(2)} €</td>
+                <td class="diff-positive">+${subidaAntiguedadMes.toFixed(2)} €/mes</td>
+                <td>${(antiguedadBase + subidaAntiguedadMes).toFixed(2)} €</td>
+                <td><strong>+${totalAnt.toFixed(2)} €</strong></td>
+            `;
             tbody.appendChild(tr);
         }
 
@@ -416,59 +354,39 @@
         const mesesPlusLogistica = parseFloat(document.getElementById('mesesPlusLogistica').value) || 0;
         if (horasPlusLogistica > 0 && mesesPlusLogistica > 0) {
             const plusLogisticaMensual = (80 / 40) * horasPlusLogistica;
-            const atrasoLogistica = plusLogisticaMensual * mesesPlusLogistica;
-            brutoAtrasos += atrasoLogistica;
+            const totalLogistica = plusLogisticaMensual * mesesPlusLogistica;
+            brutoAtrasos += totalLogistica;
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>Plus Logística (${horasPlusLogistica}h/sem)</strong><br><small>${plusLogisticaMensual.toFixed(2)} €/mes x ${mesesPlusLogistica} mes(es)</small></td>
-                <td>-</td>
-                <td>${plusLogisticaMensual.toFixed(2)} €/m</td>
-                <td class="diff-positive">Íntegro (100%)</td>
-                <td><strong>+${atrasoLogistica.toFixed(2)} €</strong></td>
+                <td><strong>Plus Logística (${horasPlusLogistica}h/sem)</strong><br><small>Nuevo plus: ${plusLogisticaMensual.toFixed(2)} €/mes x ${mesesPlusLogistica} m</small></td>
+                <td>0.00 €</td>
+                <td class="diff-positive">Nuevo (+${plusLogisticaMensual.toFixed(2)} €/m)</td>
+                <td>${plusLogisticaMensual.toFixed(2)} €</td>
+                <td><strong>+${totalLogistica.toFixed(2)} €</strong></td>
             `;
             tbody.appendChild(tr);
         }
 
-        // 4. PLUS TRANSPORTE
-        const transporteAcumulado = parseFloat(document.getElementById('transporteAcumulado').value) || 0;
-        if (transporteAcumulado > 0) {
-            const totalTrans = transporteAcumulado * porcentajePendiente * factorProrrateoPagas;
-            brutoAtrasos += totalTrans;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><strong>Plus Transporte (Acumulado)</strong></td><td>${transporteAcumulado.toFixed(2)} € total</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalTrans.toFixed(2)} €</strong></td>`;
-            tbody.appendChild(tr);
-        }
-
-        // 5. PLUS DOMINGO VACACIONAL
-        const domingoVacAcumulado = parseFloat(document.getElementById('domingoVacAcumulado').value) || 0;
-        if (domingoVacAcumulado > 0) {
-            const totalDomVac = domingoVacAcumulado * porcentajePendiente * factorProrrateoPagas;
-            brutoAtrasos += totalDomVac;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><strong>Plus Domingo Vacacional (Acumulado)</strong></td><td>${domingoVacAcumulado.toFixed(2)} € total</td><td>-</td><td class="diff-positive">1.1%</td><td><strong>+${totalDomVac.toFixed(2)} €</strong></td>`;
-            tbody.appendChild(tr);
-        }
-
-        // 6. RESTO DE CONCEPTOS VARIABLES
+        // 4. CONCEPTOS VARIABLES Y PLUSES
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
-            const difTotal = inputVal * (data.nua - data.ant);
+            const difTotal = inputVal * data.subida;
             brutoAtrasos += difTotal;
 
             if (inputVal > 0) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${data.nombre}</strong> (${inputVal} uds)</td>
+                    <td><strong>${data.nombre}</strong> (${inputVal} ${data.tipo === 'mes' ? 'meses' : data.tipo === 'h' ? 'horas' : 'uds'})</td>
                     <td>${data.ant.toFixed(2)} €</td>
+                    <td class="diff-positive">+${data.subida.toFixed(2)} €</td>
                     <td>${data.nua.toFixed(2)} €</td>
-                    <td class="diff-positive">+${(data.nua - data.ant).toFixed(2)} €</td>
                     <td><strong>+${difTotal.toFixed(2)} €</strong></td>
                 `;
                 tbody.appendChild(tr);
             }
         }
 
-        // 7. MEJORA VOLUNTARIA E IRPF
+        // 5. MEJORA VOLUNTARIA E IRPF
         const mejoraVoluntaria = parseFloat(document.getElementById('mejoraVoluntaria').value) || 0;
         const porcentajeIrpf = parseFloat(document.getElementById('porcentajeIrpf').value) || 0;
         const sujetoAretencion = Math.max(0, brutoAtrasos - mejoraVoluntaria);
@@ -488,10 +406,6 @@
 
     document.addEventListener('input', calcular);
     document.addEventListener('change', calcular);
-
-    window.onload = function() {
-        agregarTramo('', '', 0, 'mozo');
-    };
 </script>
 
 </body>
