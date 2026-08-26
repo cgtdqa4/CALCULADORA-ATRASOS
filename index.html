@@ -420,6 +420,9 @@
         document.getElementById('totalNeto').textContent = (netoAtrasos >= 0 ? '+' : '') + netoAtrasos.toFixed(2) + ' €';
     }
 
+    // Inicializar cálculo en 0
+    calcular();
+
     document.addEventListener('input', calcular);
     document.addEventListener('change', calcular);
 </script>
