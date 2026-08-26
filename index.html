@@ -195,8 +195,8 @@
             </select>
         </div>
         <div class="input-group highlight-box">
-            <label for="mesesTransporte">Total Plus Transporte</label>
-            <input type="number" id="mesesTransporte" min="0" max="12" step="0.5" value="0" placeholder="Atraso: +5.24 €/mes (130.88 + 5.24 = 136.12 €)">
+            <label for="totalTransporte">Total Plus Transporte Cobrado (€)</label>
+            <input type="number" id="totalTransporte" min="0" step="0.01" value="0" placeholder="Importe total cobrado">
         </div>
         <div class="input-group highlight-box">
             <label for="domingostRotativos">Total Plus Domingos Trab. (uds)</label>
@@ -262,7 +262,6 @@
 <script>
     // TARIFAS ACTUALIZADAS SEGÚN TABLA SALARIAL CGT SVQ1 2026
     const TARIFAS = {
-        mesesTransporte: { nombre: 'Plus Transporte (Mes)', ant: 130.88, subida: 5.24, nua: 136.12, tipo: 'mes' },
         domingostRotativos: { nombre: 'Plus Domingos', ant: 85.72, subida: 3.43, nua: 89.15, tipo: 'ud' },
         plusFestivoComple: { nombre: 'Plus Festivos', ant: 174.13, subida: 6.97, nua: 181.10, tipo: 'ud' },
         horasComplDiurnas: { nombre: 'Hora Complementaria', ant: 10.05, subida: 0.40, nua: 10.45, tipo: 'h' },
@@ -341,7 +340,7 @@
             `;
             tbody.appendChild(trLog);
 
-            // 2. ANTIGÜEDAD (Calculada automáticamente sobre el tramo de jornada seleccionado)
+            // 2. ANTIGÜEDAD (Sobre los meses del tramo)
             const antiguedadBase = parseFloat(document.getElementById('antiguedadMensual').value) || 0;
             if (antiguedadBase > 0) {
                 const numQuinquenios = antiguedadBase / 39.80; 
@@ -361,24 +360,41 @@
             }
         }
 
-        // 3. PLUS DOMINGO VACACIONAL POR IMPORTE TOTAL
+        // 3. PLUS TRANSPORTE POR IMPORTE TOTAL
+        const totalTransporte = parseFloat(document.getElementById('totalTransporte').value) || 0;
+        if (totalTransporte > 0) {
+            const atrasoTransporte = totalTransporte * (0.04 / 0.96);
+            brutoAtrasos += atrasoTransporte;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>Plus Transporte (Total)</strong><br><small>Importe cobrado: ${totalTransporte.toFixed(2)} €</small></td>
+                <td>${totalTransporte.toFixed(2)} €</td>
+                <td class="diff-positive">Ajuste +4%</td>
+                <td>-</td>
+                <td><strong>+${atrasoTransporte.toFixed(2)} €</strong></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        // 4. PLUS DOMINGO VACACIONAL POR IMPORTE TOTAL
         const totalDomVac = parseFloat(document.getElementById('totalDomingoVacacional').value) || 0;
         if (totalDomVac > 0) {
-            const atrasoDomVac = totalDomVac * (0.04 / 0.96); // Ajuste proporcional subida pactada
+            const atrasoDomVac = totalDomVac * (0.04 / 0.96);
             brutoAtrasos += atrasoDomVac;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>Plus Domingo Vacacional</strong><br><small>Importe cobrado: ${totalDomVac.toFixed(2)} €</small></td>
                 <td>${totalDomVac.toFixed(2)} €</td>
-                <td class="diff-positive">Ajuste subida</td>
+                <td class="diff-positive">Ajuste +4%</td>
                 <td>-</td>
                 <td><strong>+${atrasoDomVac.toFixed(2)} €</strong></td>
             `;
             tbody.appendChild(tr);
         }
 
-        // 4. CONCEPTOS VARIABLES Y PLUSES
+        // 5. CONCEPTOS VARIABLES Y PLUSES
         for (const [key, data] of Object.entries(TARIFAS)) {
             const inputVal = parseFloat(document.getElementById(key).value) || 0;
             const difTotal = inputVal * data.subida;
@@ -387,7 +403,7 @@
             if (inputVal > 0) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${data.nombre}</strong> (${inputVal} ${data.tipo === 'mes' ? 'meses' : data.tipo === 'h' ? 'horas' : 'uds'})</td>
+                    <td><strong>${data.nombre}</strong> (${inputVal} ${data.tipo === 'h' ? 'horas' : 'uds'})</td>
                     <td>${data.ant.toFixed(2)} €</td>
                     <td class="diff-positive">+${data.subida.toFixed(2)} €</td>
                     <td>${data.nua.toFixed(2)} €</td>
@@ -397,7 +413,7 @@
             }
         }
 
-        // 5. MEJORA VOLUNTARIA E IRPF
+        // 6. MEJORA VOLUNTARIA E IRPF
         const mejoraVoluntaria = parseFloat(document.getElementById('mejoraVoluntaria').value) || 0;
         const porcentajeIrpf = parseFloat(document.getElementById('porcentajeIrpf').value) || 0;
         const sujetoAretencion = Math.max(0, brutoAtrasos - mejoraVoluntaria);
